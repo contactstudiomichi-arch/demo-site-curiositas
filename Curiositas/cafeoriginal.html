@@ -1,0 +1,2141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Curiositas - Curiosity Café</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{
+      --sage-green:#8B9D83; 
+      --forest-green:#4A5D4A; 
+      --cream:#F5F1E6; 
+      --terracotta:#D4A574;
+      --warm-beige:#E8DCC4; 
+      --olive:#6B7C59; 
+      --soft-orange:#E8A87C; 
+      --charcoal:#2C2A28;
+      --holiday:#c81e1e; /* red-700 */
+      --closed:#9ca3af;  /* gray-400 */
+      --open:#4A5D4A;    /* forest */
+      --c-curiosity:#FACC15;   /* thick yellow C  */
+      --c-creation:#73ae35;    /* green ring      */
+      --c-care:#3B82F6;        /* blue ring       */
+      --c-collaboration:#DB2777;      /* magenta ring    */
+    }
+
+    /* --- Multi-level nav --- */
+.nav-group { position:relative; }
+.nav-button { padding:.5rem .75rem; font-weight:600; border-radius:.5rem; }
+.nav-button:focus-visible { outline:2px solid var(--sage-green); outline-offset:2px; }
+.menu-panel {
+  position:absolute; top:110%; left:0; min-width:220px;
+  background:#fff; border:1px solid rgba(0,0,0,.06);
+  border-radius:.75rem; box-shadow:0 14px 30px rgba(0,0,0,.12);
+  padding:.5rem; display:none; z-index:60;
+}
+.menu-panel.open { display:block; }
+.menu-item { display:flex; align-items:center; gap:.5rem;
+  padding:.5rem .6rem; border-radius:.5rem; }
+.menu-item:hover { background:rgba(232,220,196,.5); }
+.menu-section-title { font-size:.75rem; opacity:.7; padding:.35rem .5rem; }
+
+@media (min-width: 1024px){
+  .menu-panel.mega { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.25rem .5rem; min-width:460px; }
+}
+
+/* Mobile accordion */
+.accordion { border:1px solid var(--warm-beige); border-radius:.75rem; background:#fff; overflow:hidden; }
+.acc-header { display:flex; justify-content:space-between; align-items:center; padding:.75rem 1rem; font-weight:600; }
+.acc-content { display:none; padding:.5rem 1rem 1rem; }
+.acc-content.show { display:block; }
+
+
+    *{ box-sizing:border-box; }
+    body{ margin:0; font-family: system-ui,-apple-system,BlinkMacSystemFont,"Inter",sans-serif; background:var(--cream); color:var(--charcoal); }
+
+    .fade-enter{opacity:0; transform:translateY(16px);} .fade-enter-active{opacity:1; transform:translateY(0); transition:all .35s ease;}
+
+    @keyframes float { 0%,100%{transform:translateY(0) rotate(0deg);} 50%{transform:translateY(-30px) rotate(5deg);} }
+    .float-element{ animation: float 20s ease-in-out infinite; font-size:4rem; position:absolute; opacity:0.15; pointer-events:none; }
+
+    @keyframes bounce-subtle { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-5px);} }
+    .animate-bounce-subtle{ animation:bounce-subtle 3s ease-in-out infinite; }
+
+    .season-card{ transition: transform .25s ease, box-shadow .25s ease; will-change: transform; }
+    .season-card:hover{ transform: translateY(-6px) rotate(-2.5deg); box-shadow: 0 14px 30px rgba(0,0,0,.12); }
+    .season-emoji{ display:inline-block; }
+    @media (prefers-reduced-motion: reduce){ .season-card{ transition:none;} .season-card:hover{ transform:none; box-shadow:none;} }
+
+    .card-hover{ position:relative; transition:transform .3s cubic-bezier(.34,1.56,.64,1), box-shadow .3s ease; }
+    .card-hover::after{ content:''; position:absolute; inset:0; border-radius:inherit; box-shadow:0 10px 30px rgba(0,0,0,.15); opacity:0; transition:opacity .3s; pointer-events:none; }
+    .card-hover:hover{ transform:translateY(-8px) scale(1.02);} .card-hover:hover::after{ opacity:1; }
+
+    .btn{ display:inline-flex; align-items:center; justify-content:center; border-radius:9999px; padding:.5rem 1.5rem; font-size:.875rem; line-height:1.25rem; font-weight:500; border:none; cursor:pointer; position:relative; overflow:hidden; transition:all .3s ease; background:var(--terracotta); color:#fff; }
+    .btn.border{ background:#fff; color:var(--forest-green); border:1px solid rgba(0,0,0,.1); }
+    .btn::before{ content:''; position:absolute; top:50%; left:50%; width:0; height:0; border-radius:50%; background:rgba(255,255,255,.3); transform:translate(-50%,-50%); transition:width .6s,height .6s; }
+    .btn:hover::before{ width:300px; height:300px; }
+
+    .nav-link{ position:relative; padding-bottom:4px; }
+    .nav-link::after{ content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:var(--forest-green); transition:width .3s ease; }
+    .nav-link:hover::after{ width:100%; }
+
+    @keyframes pulse-glow { 0%,100%{box-shadow:0 0 0 0 rgba(139,157,131,.7);} 50%{box-shadow:0 0 0 10px rgba(139,157,131,0);} }
+    .icon-pulse{ animation:pulse-glow 2s infinite; border-radius:50%; }
+
+    .testimonial-track{transition:transform .5s ease-in-out; display:flex;} .testimonial-slide{min-width:100%;}
+
+    /* 追加：アニメ一時停止用 */
+    .anim-paused{ animation-play-state: paused !important; }
+
+    /* —— Philosophy Dream Strips —— */
+    .philo-wrap{
+      position:relative; overflow:hidden; border-radius:1rem;
+      background:linear-gradient(135deg, rgba(139,157,131,.15), rgba(232,220,196,.35));
+      padding:2rem;
+      -webkit-mask-image:linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+              mask-image:linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+    }
+
+    .philo-row{
+      display:flex;
+      flex-direction:column;   /* stack rows vertically */
+      gap:1rem;                /* space between the two rows */
+      white-space:nowrap;
+      margin:0 auto;
+    }
+
+    .philo-img{
+      width:280px; height:180px; object-fit:cover; border-radius:.75rem;
+      filter:saturate(1.05) contrast(1.02);
+      box-shadow:0 10px 24px rgba(0,0,0,.10);
+    }
+
+    .philo-track{
+      display:flex; gap:1rem; animation:slide-left 60s linear infinite;
+    }
+    .philo-track.rev{ animation:slide-right 60s linear infinite; }
+
+    @keyframes slide-left{
+      0%{ transform:translateX(0); }
+      100%{ transform:translateX(-50%); }
+    }
+    @keyframes slide-right{
+      0%{ transform:translateX(-50%); }
+      100%{ transform:translateX(0); }
+    }
+
+    /* line-by-line fade for philosophy text */
+    .philo-lines{ line-height:1.7; }
+    .philo-line{ opacity:0; transform:translateY(10px); transition:opacity .5s ease, transform .5s ease; }
+    .philo-line.show{ opacity:1; transform:translateY(0); }
+
+    @media (prefers-reduced-motion: reduce){
+      .philo-line{ opacity:1; transform:none; }
+    }
+
+    /* Blooming flower animations */
+    @keyframes stemGrow {
+      0% { stroke-dashoffset: 320; opacity: 0; }
+      30% { opacity: 1; }
+      100% { stroke-dashoffset: 0; opacity: 1; }
+    }
+
+    @keyframes petalBloom {
+      0% { transform: scale(0.2) rotate(var(--rot)); opacity: 0; }
+      60% { opacity: 1; }
+      100% { transform: scale(1) rotate(var(--rot)); opacity: 1; }
+    }
+
+    @keyframes centerPop {
+      0% { transform: scale(0); opacity: 0; }
+      60% { transform: scale(1.15); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes sparkle {
+      0%, 100% { transform: scale(0); opacity: 0; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    .bloom-stem {
+      stroke-dasharray: 320;
+      stroke-dashoffset: 320;
+      animation: stemGrow 2.2s ease forwards 0.1s;
+    }
+
+    .bloom-petal {
+      transform-origin: 100px 98px;
+      animation: petalBloom 900ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+      opacity: 0;
+    }
+
+    .bloom-petal[data-i="0"] { animation-delay: 0.35s; }
+    .bloom-petal[data-i="1"] { animation-delay: 0.45s; }
+    .bloom-petal[data-i="2"] { animation-delay: 0.55s; }
+    .bloom-petal[data-i="3"] { animation-delay: 0.65s; }
+    .bloom-petal[data-i="4"] { animation-delay: 0.75s; }
+    .bloom-petal[data-i="5"] { animation-delay: 0.85s; }
+
+    .bloom-center {
+      animation: centerPop 0.8s ease-out forwards 0.9s;
+      transform-origin: 100px 98px;
+      opacity: 0;
+    }
+
+    .bloom-sparkle {
+      opacity: 0;
+      transform-origin: center;
+      animation: sparkle 1.6s ease infinite;
+    }
+
+    .anim-paused {
+      animation-play-state: paused !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bloom-stem, .bloom-petal, .bloom-center, .bloom-sparkle {
+        animation: none;
+      }
+      .bloom-petal, .bloom-center {
+        opacity: 1;
+      }
+    }
+
+    /* Make the bloom SVG scale nicely on mobile */
+    .bloom-svg{
+      width: 100%;
+      height: auto;
+      max-width: 260px;      /* comfy phone size */
+      display: block;
+      margin: 0 auto;        /* center it when stacked under text */
+    }
+    @media (min-width: 768px){
+      .bloom-svg{ max-width: 320px; }  /* a bit larger on md+ */
+    }
+
+    .recipe-card{perspective:1000px; height:20rem; position:relative;}
+    .recipe-front,.recipe-back{ position:absolute; inset:0; backface-visibility:hidden; transition:transform .5s ease; }
+    .recipe-front{ background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:1.5rem; }
+    .recipe-back{ background:linear-gradient(135deg,var(--sage-green),var(--forest-green)); color:#fff; padding:1.5rem; transform:translateY(100%); overflow-y:auto; }
+    .recipe-card:hover .recipe-front{transform:translateY(-100%);} .recipe-card:hover .recipe-back{transform:translateY(0);}    
+
+    .garden-map{ background:var(--cream); border:4px solid var(--sage-green); border-radius:1rem; padding:2rem; position:relative; }
+    .plant-marker{position:absolute; cursor:pointer;} .plant-tooltip{ position:absolute; bottom:100%; left:50%; transform:translateX(-50%); background:var(--charcoal); color:#fff; font-size:.75rem; line-height:1rem; padding:.25rem .5rem; border-radius:.25rem; margin-bottom:.5rem; white-space:nowrap; opacity:0; transition:opacity .2s; pointer-events:none; }
+    .plant-marker:hover .plant-tooltip{opacity:1;}
+
+    html{scroll-behavior:smooth;}
+
+    /* —— Values card image header —— */
+    .value-hero{
+      position: relative;
+      height: 160px;
+      overflow: hidden;
+      border-top-left-radius: 0.75rem;  /* match card radius */
+      border-top-right-radius: 0.75rem;
+    }
+    .value-hero img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: saturate(1.02) contrast(1.02);
+    }
+    .value-hero::after{
+      content:"";
+      position:absolute; inset:0;
+      background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.05) 50%, transparent);
+    }
+    .value-pill{
+      position:absolute; left:12px; bottom:12px;
+      font-size:.75rem; line-height:1rem;
+      color:#fff; background:rgba(0,0,0,.45);
+      padding:.25rem .5rem; border-radius:.4rem;
+      backdrop-filter: blur(3px);
+    }
+
+    /* Calendar styles */
+    .cal-wrap{ border:1px solid rgba(0,0,0,.06); background:#fff; border-radius:1rem; overflow:hidden; }
+    .cal-header{ display:flex; align-items:center; justify-content:space-between; padding:1rem 1.25rem; background:linear-gradient(135deg, rgba(139,157,131,0.1), rgba(232,220,196,0.3)); }
+    .cal-title{ font-weight:700; }
+    .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); }
+    .cal-dow{ font-size:.75rem; text-transform:uppercase; letter-spacing:.06em; padding:.5rem .75rem; color:#4b5563; background:#fafaf9; border-bottom:1px solid #eee; }
+    .cal-cell{ min-height:84px; padding:.5rem .5rem 1.25rem; border-bottom:1px solid #f1f5f9; border-right:1px solid #f1f5f9; position:relative; }
+    .cal-cell:last-child{ border-right:none; }
+    .cal-date{ font-size:.75rem; font-weight:600; }
+    .cal-dot{ width:6px; height:6px; border-radius:9999px; display:inline-block; margin-right:4px; }
+    .cal-chip{ font-size:.65rem; padding:.1rem .35rem; border-radius:.35rem; border:1px solid rgba(0,0,0,.08); }
+    .cal-today{ outline:2px solid var(--terracotta); outline-offset:-2px; background:linear-gradient(180deg, rgba(212,165,116,.1), transparent); }
+    .cal-holiday .cal-date{ color:var(--holiday); }
+    .cal-closed .cal-date{ color:var(--closed); }
+    .cal-open .cal-date{ color:var(--open); }
+    .cal-other-month{ opacity:.45; }
+    .cal-tooltip{ position:absolute; z-index:10; bottom:6px; left:6px; right:6px; background:#111827; color:#fff; border-radius:.5rem; font-size:.75rem; line-height:1rem; padding:.5rem .6rem; display:none; box-shadow:0 8px 28px rgba(0,0,0,.25); }
+    .cal-cell:hover .cal-tooltip{ display:block; }
+    .legend-dot{ width:10px; height:10px; border-radius:50%; display:inline-block; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="sticky top-0 z-50 border-b" style="background: rgba(245, 241, 230, 0.9); backdrop-filter: blur(8px); border-color: var(--warm-beige);">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="flex items-center justify-between py-3">
+        <button id="brandBtn" class="font-serif text-xl" style="color: var(--forest-green);" aria-label="Go home">Curiositas</button>
+        <nav id="desktopNav" class="hidden md:flex gap-6 items-center"></nav>
+        <div class="md:hidden flex items-center gap-2">
+          <button id="langBtnSm" class="rounded-full text-white px-3 text-sm" style="background: var(--sage-green);">日本語</button>
+          <button id="menuToggle" class="p-2 rounded-lg border" style="border-color: var(--warm-beige);" aria-expanded="false">☰</button>
+        </div>
+      </div>
+      <nav id="mobileNavWrap" class="md:hidden pb-4 hidden"><div id="mobileNav" class="grid grid-cols-2 gap-3"></div></nav>
+    </div>
+  </header>
+
+  <!-- Page container -->
+  <main id="app" class="flex-grow"></main>
+
+  <!-- Footer -->
+  <footer class="text-center mt-20 relative py-10" style="background: var(--charcoal); color: var(--cream);">
+    <p class="text-sm mb-2 mt-6">© 2025 Curiositas</p>
+    <p id="footerAbout" class="text-sm max-w-3xl mx-auto px-4">A community space where people and cultures meet, learn, and grow together.</p>
+  </footer>
+
+  <!-- Sticky Booking Bar -->
+  <div id="stickyBooking" class="fixed bottom-6 right-6 z-50" style="transform: translateY(200px); transition:transform .3s;">
+    <button onclick="navigate('Visit')" class="btn flex items-center gap-3 px-6 py-4 hover:scale-105" style="background: var(--terracotta);">
+      <span class="text-2xl">🗓️</span>
+      <span class="font-semibold" id="stickyBookingText">Book Your Visit</span>
+    </button>
+  </div>
+
+  <script>
+    /* Tailwind config */
+    tailwind.config = { theme: { extend: { colors: { 'sage-green':'#8B9D83', 'forest-green':'#4A5D4A','cream':'#F5F1E6','terracotta':'#D4A574','warm-beige':'#E8DCC4','olive':'#6B7C59','soft-orange':'#E8A87C','charcoal':'#2C2A28'} } } };
+
+    /* ---- Image Helper (for Unsplash or local images) ---- */
+    function imgUrl(path, w = 1200, q = 80) {
+      // If the path already has parameters, append with &
+      const sep = path.includes("?") ? "&" : "?";
+      return `${path}${sep}auto=format&fit=crop&w=${w}&q=${q}`;
+    }
+
+    /* i18n */
+    const dict = {
+      EN: {
+        brand:"Curiositas",
+        nav:[
+          {k: "Explore", en: "Explore", jp: "知る",
+            children: [
+              { k: "Home", en: "Home", jp: "ホーム" },
+              { k: "Values", en: "Values", jp: "価値観" },
+              { k: "Stories", en: "Stories", jp: "ストーリー" },
+              { k: "Gallery", en: "Gallery", jp: "ギャラリー" }
+            ]
+          },
+          {
+            k: "Experience", en: "Experience", jp: "体験",
+            children: [
+              { k: "Cafe", en: "Cafe", jp: "カフェ" },
+              { k: "Garden", en: "Garden", jp: "庭・畑" },
+              { k: "Spaces", en: "Spaces", jp: "スペース" },
+              { k: "Programs", en: "Programs", jp: "プログラム" },
+              { k: "Events", en: "Events", jp: "イベント" }
+            ]
+          },
+          {
+            k: "Plan", en: "Plan", jp: "計画",
+            children: [
+              { k: "Calendar", en: "Calendar", jp: "カレンダー" },
+              { k: "Visit", en: "Visit", jp: "訪問" }
+            ]
+          }
+        ],
+        heroTitle:"Curiositas",
+        heroSub:"Where People & Cultures Meet",
+        heroDesc:"Share meals, grow food, make things, read together, stay the night, and keep learning — all in one place.",
+        cta1:"Explore Events", cta2:"Join Our Community",
+        welcome:"Welcome to Our Community", welcomeSub:"Your knowledge, skills, and curiosity shape our shared space", welcomeP:"This is more than a place—it's a living community where participants become co-creators.",
+        howItWorks:"How It Works", visit:"Visit", experience:"Experience", share:"Share", grow:"Grow",
+        happening:"What's Happening", by:"Hosted by", join:"Join Event",
+        byTheNumbers:"By the Numbers", communityMembers:"Community Members", monthlyWorkshops:"Monthly Workshops", gardenHarvests:"Garden Harvests/Year", languagesSpoken:"Languages Spoken",
+        seasonalRhythm:"Seasonal Rhythm", spring:"Spring", summer:"Summer", autumn:"Autumn", winter:"Winter",
+        communityVoices:"Community Voices", interactiveGarden:"Interactive Garden", hoverPlants:"Hover over plants to learn more", readyHarvest:"Ready to harvest", viewRecipe:"View Full Recipe", ingredients:"Ingredients",
+        stickyBooking:"Book Your Visit", daysLeft:"d", hoursLeft:"h left", happeningNow:"Happening Now!",
+        backSpaces:"Back to Spaces", backEvents:"Back to Events", backStories:"Back to Stories",
+        recipes:"Community Recipes", shareRecipe:"Share Your Recipe",
+        philosophy:"Our Philosophy", philosophyText:"We meet at the stove.<br>We chop, simmer, and taste.<br><br>Recipes arrive as memories, gestures,<br>or small stories shared over cutting boards.<br><br>They are not fixed.<br>They expand and change with each pair of hands that join in.<br><br>Seasonal ingredients, family traditions, and techniques learned while traveling<br>all find their way to our table.<br><br>Some of us cook every day, others are just beginning.<br>Children, neighbors, grandparents, travelers.<br>In the blended movement of our hands and conversations,<br>cultures overlap, memories surface, and small discoveries appear.<br><br>Here, food is a shared language.<br>A meal is more than what fills a bowl.<br>It is the time, laughter, patience, and curiosity we share while making it.<br><br>Our recipes are always growing.<br>“Maybe just a bit more of this,”<br>“In my hometown, we do it like this…”<br>These gentle exchanges create the flavors of each season.<br><br>Every gathering becomes a quiet celebration:<br>Of seasons, of neighbors, of simply being here together.",
+        cafeTitle:"Café & Community Kitchen", cafeSub:"Where recipes evolve. Meals unite.",
+        eventsCal:"Events", eventsSub:"Join workshops, gatherings, and community activities", date:"Date:", time:"Time:", capacity:"Capacity:", reserve:"Reserve a spot",
+        hostEventQ:"Want to Host an Event?", hostEventP:"Share your skills and passion with our community", propose:"Propose a Workshop",
+        spacesTitle:"Our Spaces", spacesSub:"Explore the different areas of our community home",
+        valuesTitle:"Education & Values", valuesSub:"Curiosity, Creation, Care, Collaboration", valueDesc:(v)=>`Exploring how ${v} connects people and planet.`,
+        storiesTitle:"Community Stories", storiesSub:"Real voices and reflections from our members", readMore:"Read story",
+        programsTitle:"Programs", programsSub:"Everyone teaches, everyone learns",
+        galleryTitle:"Community Gallery", gallerySub:"Life happens in the in-between moments",
+        gardenTitle:"Farm & Garden", gardenSub:"Growing food, knowledge, and community together", growing:"What's Growing", involved:"Get Involved", sustain:"Sustainability",
+        visitUs:"Visit Us", visitSub:"Come experience our community in person", location:"Location", hours:"Hours", contact:"Contact", sendInquiry:"Send Inquiry",
+        firstGuide:"First Visit Guide", step1:"Check our event calendar", step2:"Drop by for coffee and conversation", step3:"Join a workshop or activity", step4:"Meet members & discover how you can contribute", step5:"Become part of our growing community!",
+        langToggle:"日本語", minRead:"min read",
+        // Calendar texts
+        calTitle:"Community Calendar & Business Days",
+        calLegend:"Legend",
+        calOpen:"Open", calClosed:"Closed", calHoliday:"Holiday", calNoEvents:"No events",
+        calEvents:"events",
+      },
+      JP: {
+        brand:"Curiositas",
+        nav:[
+        {k: "Explore", en: "Explore", jp: "知る",
+          children: [
+            { k: "Home", en: "Home", jp: "ホーム" },
+            { k: "Values", en: "Values", jp: "価値観" },
+            { k: "Stories", en: "Stories", jp: "ストーリー" },
+            { k: "Gallery", en: "Gallery", jp: "ギャラリー" }
+          ]
+        },
+        {
+          k: "Experience", en: "Experience", jp: "体験",
+          children: [
+            { k: "Cafe", en: "Cafe", jp: "カフェ" },
+            { k: "Garden", en: "Garden", jp: "庭・畑" },
+            { k: "Spaces", en: "Spaces", jp: "スペース" },
+            { k: "Programs", en: "Programs", jp: "プログラム" },
+            { k: "Events", en: "Events", jp: "イベント" }
+          ]
+        },
+        {
+          k: "Plan", en: "Plan", jp: "計画",
+          children: [
+            { k: "Calendar", en: "Calendar", jp: "カレンダー" },
+            { k: "Visit", en: "Visit", jp: "訪問" }
+          ]
+        }
+        ],
+        heroTitle:"キュリオシタス", heroSub:"人と文化が出会う場所", heroDesc:"食を分かち、土を耕し、手を動かし、本に親しみ、泊まり、学び合う－すべてここで",
+        cta1:"イベントを見る", cta2:"コミュニティに参加",
+        welcome:"私たちのコミュニティへようこそ", welcomeSub:"あなたの知識・スキル・好奇心が花咲きます", welcomeP:"場所以上の体験。人と人がつながり、共に創っていく「生きた」コミュニティです。",
+        howItWorks:"しくみ", visit:"訪問", experience:"体験", share:"共有", grow:"成長",
+        happening:"今後のイベント", by:"主催", join:"参加する",
+        byTheNumbers:"数字で見る", communityMembers:"関係者", monthlyWorkshops:"ワークショップ", gardenHarvests:"栽培種類", languagesSpoken:"言語",
+        seasonalRhythm:"季節のリズム", spring:"春", summer:"夏", autumn:"秋", winter:"冬",
+        communityVoices:"コミュニティの声", interactiveGarden:"庭の地図", hoverPlants:"植物にカーソルを合わせて詳細を確認", readyHarvest:"収穫可能", viewRecipe:"レシピを見る", ingredients:"材料",
+        stickyBooking:"予約はこちら", daysLeft:"日", hoursLeft:"時間", happeningNow:"開催中！",
+        backSpaces:"スペース一覧へ", backEvents:"イベント一覧へ", backStories:"ストーリーへ戻る",
+        recipes:"コミュニティのレシピ", shareRecipe:"レシピを共有する",
+        philosophy:"私たちの理念", philosophyText:"私たちは、台所で出会います。<br>手を動かして、刻んで、煮て、味見して。<br><br>レシピは「完成された答え」ではありません。<br>誰かの記憶、旅の途中の工夫、<br>まな板の上で交わされる小さな物語です。<br><br>それは固定されたものではなく、<br>人が変わり、季節が移り、材料が変わるたびに、<br>少しずつ姿を変えていきます。<br><br>毎日料理をする人も、今日がはじめての人も、<br>子どもも、旅人も、近所の人も、<br>同じテーブルに集います。<br><br>文化が重なり、記憶がよみがえり、<br>気づきがそっと現れる場所。<br><br>ここでの「食」は、ただお腹を満たすためのものではありません。<br>時間と、手間と、笑い声と、やさしさを<br>分かち合うための言語です。<br><br>「もう少し調味料を」<br>「私の故郷ではこうするよ」<br>そんなやりとりが、季節の味わいをつくります。<br><br>すべての集まりは小さなお祝いです。<br>季節と、隣人と、<br>いまここにいることそのものに。",
+        cafeTitle:"カフェ＆コミュニティキッチン", cafeSub:"レシピを共有し、食事が私たちを結びつける",
+        eventsCal:"イベント＆カレンダー", eventsSub:"ワークショップや集いに参加しよう", date:"日時:", time:"時間:", capacity:"定員:", reserve:"予約する",
+        hostEventQ:"イベントを主催したい？", hostEventP:"あなたのスキルと情熱をシェアしよう", propose:"ワークショップを提案",
+        spacesTitle:"私たちのスペース", spacesSub:"コミュニティの家の各エリアを探索",
+        valuesTitle:"教育と価値観", valuesSub:"好奇心・創造力・思いやり・協働", valueDesc:(v)=>`${v}が人と地球をどうつなぐか探求する`,
+        storiesTitle:"コミュニティストーリー", storiesSub:"メンバーの声と実践", readMore:"読む",
+        programsTitle:"プログラム", programsSub:"誰でも教えられ、誰でも学べる環境",
+        galleryTitle:"コミュニティギャラリー", gallerySub:"何気ない時間の中で、人生は進んでいく",
+        gardenTitle:"農園＆庭", gardenSub:"食・知識・コミュニティを一緒に育てる", growing:"育てているもの", involved:"参加方法", sustain:"持続可能性",
+        visitUs:"訪問する", visitSub:"コミュニティを直接体験しよう", location:"場所", hours:"営業時間", contact:"連絡先", sendInquiry:"お問い合わせ",
+        firstGuide:"初めての訪問ガイド", step1:"イベントカレンダーを確認", step2:"コーヒーと会話を楽しむ", step3:"ワークショップや活動に参加", step4:"メンバーに会い、貢献の形を発見", step5:"成長するコミュニティの一員に！",
+        langToggle:"English", minRead:"分",
+        // Calendar texts
+        calTitle:"カレンダー（イベント＆営業日）",
+        calLegend:"凡例",
+        calOpen:"営業", calClosed:"休業", calHoliday:"祝日", calNoEvents:"イベントなし",
+        calEvents:"件",
+      }
+    };
+
+// Helpers
+function labelOf(node){ return (lang === 'EN' ? node.en : node.jp); }
+  function groups(){ return dict[lang].nav; } // convenience
+
+  // Simple router hook (replace with your real router)
+  function navigate(key){
+    // e.g., swap view, pushState, or call your existing view loader
+    console.log("navigate ->", key);
+    loadPage && loadPage(key); // if you have a loader
+  }
+
+  // --- Desktop: top-level groups with hover dropdown
+  function labelOf(node){ return (lang==='EN' ? node.en : node.jp); }
+
+  function renderDesktopNav(){
+    const root = document.getElementById('desktopNav');
+    if(!root) return;
+
+    const groups = (dict[lang] && dict[lang].nav) ? dict[lang].nav : [];
+    root.innerHTML = groups.map(group => {
+      const items = (group.children || []).map(item => {
+        return `
+          <button
+            class="block w-full text-left px-3 py-2 rounded hover:bg-[var(--warm-beige)]/60"
+            onclick="navigate('${item.k}')"
+          >
+            ${labelOf(item)}
+          </button>`;
+      }).join('');
+
+      return `
+        <div class="relative group/nav">
+          <button
+            class="px-2 py-2 font-medium hover:text-[var(--forest-green)] focus:outline-none"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
+            ${labelOf(group)}
+          </button>
+
+          <!-- Dropdown panel -->
+          <div
+            class="absolute left-0 top-full mt-2 w-56 rounded-xl border bg-white shadow-lg p-2
+                  opacity-0 invisible translate-y-1 transition
+                  group-hover/nav:opacity-100 group-hover/nav:visible group-hover/nav:translate-y-0
+                  group-focus-within/nav:opacity-100 group-focus-within/nav:visible group-focus-within/nav:translate-y-0 z-50"
+            style="border-color: var(--warm-beige);"
+          >
+            ${items}
+          </div>
+        </div>`;
+    }).join('');
+
+    // Accessibility nicety: reflect expanded state
+    root.querySelectorAll('.group\\/nav > button').forEach(btn=>{
+      const wrap = btn.parentElement;
+      const panel = wrap.querySelector('div[role!="menu"]'); // our panel
+
+      const setExpanded = (v)=> btn.setAttribute('aria-expanded', v ? 'true' : 'false');
+
+      wrap.addEventListener('mouseenter', ()=> setExpanded(true));
+      wrap.addEventListener('mouseleave', ()=> setExpanded(false));
+      btn.addEventListener('focus', ()=> setExpanded(true));
+      btn.addEventListener('blur', ()=> setExpanded(false));
+      panel && panel.addEventListener('focusin', ()=> setExpanded(true));
+      panel && panel.addEventListener('focusout', (e)=>{
+        if(!panel.contains(e.relatedTarget)) setExpanded(false);
+      });
+    });
+  }
+
+  // --- Mobile: grid of groups; tapping a group toggles its children
+  function renderMobileNav(){
+    const wrap = document.getElementById('mobileNavWrap');
+    const root = document.getElementById('mobileNav');
+    if(!root) return;
+
+    root.innerHTML = groups().map((group, idx) => {
+      const gid = `mgrp-${idx}`;
+      const children = (group.children || []).map(item =>
+        `<button class="text-left px-3 py-2 rounded border border-[var(--warm-beige)] hover:bg-[var(--warm-beige)]/60"
+                 onclick="navigate('${item.k}')">${labelOf(item)}</button>`
+      ).join('');
+
+      return `
+        <div class="col-span-2 border rounded-xl p-3" style="border-color:var(--warm-beige);">
+          <button class="w-full flex items-center justify-between text-left font-medium"
+                  aria-controls="${gid}" aria-expanded="false"
+                  onclick="toggleMobileGroup('${gid}', this)">
+            <span>${labelOf(group)}</span>
+            <span class="ml-3">▾</span>
+          </button>
+          <div id="${gid}" class="mt-2 hidden grid grid-cols-1 gap-2">
+            ${children}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // wire hamburger
+    const toggle = document.getElementById('menuToggle');
+    if(toggle && wrap){
+      toggle.onclick = () => {
+        const open = wrap.classList.toggle('hidden') === false;
+        toggle.setAttribute('aria-expanded', String(open));
+      };
+    }
+  }
+
+  function toggleMobileGroup(id, btn){
+    const el = document.getElementById(id);
+    if(!el) return;
+    const nowOpen = el.classList.toggle('hidden') === false;
+    btn.setAttribute('aria-expanded', String(nowOpen));
+  }
+
+  // --- Language switch should re-render both navs
+  function rerenderNav(){
+    renderDesktopNav();
+    renderMobileNav();
+  }
+
+  // Optional: basic keyboard/escape for desktop dropdowns
+  function setupDesktopNavA11y(){
+    const root = document.getElementById('desktopNav');
+    if(!root) return;
+    root.addEventListener('keydown', (e) => {
+      if(e.key === 'Escape'){
+        // blur to close group-hover via focus-within
+        const el = document.activeElement;
+        el && el.blur && el.blur();
+      }
+    });
+  }
+
+  // Initial render (call once after dict/lang boot)
+  document.addEventListener('DOMContentLoaded', () => {
+    renderDesktopNav();
+    renderMobileNav();
+    setupDesktopNavA11y();
+  });
+
+  // Example: if you already have a lang button, call rerenderNav() after toggling
+  const langBtnSm = document.getElementById('langBtnSm');
+  if(langBtnSm){
+    langBtnSm.addEventListener('click', () => {
+      lang = (lang === 'EN' ? 'JP' : 'EN');
+      langBtnSm.textContent = (lang === 'EN' ? '日本語' : 'English');
+      rerenderNav();
+    });
+  }
+
+    /* Content data */
+/* Café / Kitchen photo set (use your own images if you like) */
+const PHILO_IMAGES = [
+  imgUrl("images/Cafe1.jpg"),
+  imgUrl("https://images.unsplash.com/photo-1526318472351-c75fcf070305"),
+  imgUrl("https://images.unsplash.com/photo-1504754524776-8f4f37790ca0"),
+  imgUrl("https://images.unsplash.com/photo-1512621776951-a57141f2eefd"),
+  imgUrl("https://images.unsplash.com/photo-1498654896293-37aacf113fd9"),
+  imgUrl("images/Cafe2.jpg"),
+  imgUrl("images/Cafe3.jpg"),
+  imgUrl("images/Cafe4.jpg")
+];
+
+// Split the master list into two disjoint sets (even/odd)
+const [PHILO_TOP, PHILO_BOTTOM] = (() => {
+  const top = [], bottom = [];
+  PHILO_IMAGES.forEach((src, i) => (i % 2 ? bottom : top).push(src));
+  return [top, bottom];
+})();
+
+    /* ================== EVENTS ================== */
+const eventList = [
+  /* ---------- CAFE / KITCHEN ---------- */
+  {
+    date:{day:"16", mon:"NOV", full:"2025-11-16T11:00:00"},
+    cat:"Cooking",
+    kind:"special",
+    titleEN:"Autumn Harvest Feast: From Garden to Table",
+    titleJP:"秋の収穫ごはん：畑から食卓へ",
+    hostEN:"Yuki Sasaki & Taro Sakamoto",
+    hostJP:"佐々木由紀・坂本太朗",
+    time:"10:00–16:00",
+    capacity:18,
+    img: imgUrl("images/Harvest.jpg"),
+    descEN:"Transform fresh garden produce into a seasonal feast. We'll prepare ferments, hearty stews, and edible flowers together, then gather for a communal long-table meal.",
+    descJP:"畑で採れた野菜を季節の料理に。発酵食・煮込み・エディブルフラワーをみんなで準備して、長テーブルを囲んで頂きます。",
+    bulletsEN:["Morning harvest walk in the garden","Cook in small rotating teams (prep, ferment station, stove)","Set the long table together & share the feast"],
+    bulletsJP:["畑を歩いて収穫（午前中）","下ごしらえ・発酵・火入れ・盛り付け","みんなでテーブルをととのえて、ごちそうを囲む"]
+  },
+  {
+    date:{day:"14", mon:"DEC", full:"2025-12-14T10:00:00"},
+    cat:"Cooking",
+    kind:"recurring",
+    recurEN:"Every 2nd Sunday",
+    recurJP:"毎月第2日曜",
+    titleEN:"Ingredient Rescue Party: Give Forgotten Foods New Life",
+    titleJP:"眠っている食材を救済しよう：テーマ別サルベージパーティー",
+    hostEN:"Community Kitchen Team",
+    hostJP:"コミュニティキッチン参加者",
+    time:"11:00–14:00",
+    capacity:16,
+    img: imgUrl("https://images.unsplash.com/photo-1490818387583-1baba5e638af?auto=format&fit=crop&w=1200&q=80"),
+    descEN:"Bring a neglected ingredient from your pantry. Together we'll experiment with flavors, reduce waste, and create new family favorites.",
+    descJP:"棚の奥で眠っている食材を一つ持ち寄って。みんなで味を探求しながら、フードロスを減らし、新しい定番料理を発見します。",
+    bulletsEN:["Share the story behind your ingredient","Brainstorm & cook in small teams","Taste, learn, take recipes home"],
+    bulletsJP:["持ち寄った食材のストーリーを共有","小グループでアイデア出し＆調理","食事・学び・レシピを持ち帰る"]
+  },
+  {
+    date:{day:"18", mon:"JAN", full:"2026-01-18T18:30:00"},
+    cat:"Cooking",
+    kind:"recurring",
+    recurEN:"Monthly Book & Soup Night",
+    recurJP:"毎月開催・本とスープの夜",
+    titleEN:"Book & Soup: Winter Stories by the Fire",
+    titleJP:"本とスープ：冬の夜の物語会",
+    hostEN:"Fatima Benali & Clara Müller",
+    hostJP:"ファティマ・ベナリ & クララ・ミューラー",
+    time:"18:30–20:30",
+    capacity:20,
+    img: imgUrl("images/Reading.jpg"),
+    descEN:"An evening of short readings, warm soup, and gentle conversation. Bring a favorite passage, listen to others, and share thoughts when you're ready.",
+    descJP:"短い朗読とあたたかいスープと、やさしい対話の夜。好きな一節を持ち寄って、耳を傾けて、話したくなったら話す、ゆったりな会。",
+    bulletsEN:["Arrive, choose your soup, settle in","Reading circle: share short memorable passages","Open conversation & reflection time"],
+    bulletsJP:["スープを選んで、ゆっくり着席","朗読の輪：印象的な一節を共有","自由な対話と振り返りの時間"]
+  },
+
+  /* ---------- GARDEN ---------- */
+  {
+    date:{day:"30", mon:"NOV", full:"2025-11-30T09:30:00"},
+    cat:"Garden",
+    kind:"special",
+    titleEN:"Regenerative Planting Lab: Soil First",
+    titleJP:"再生農業・植え付けラボ：まずは土から",
+    hostEN:"Hiroshi Nakagawa",
+    hostJP:"中澤宏志",
+    time:"09:30–12:00",
+    capacity:14,
+    img: imgUrl("https://images.unsplash.com/photo-1461354464878-ad92f492a5a0?auto=format&fit=crop&w=1200&q=80"),
+    descEN:"A hands-on workshop focused on creating healthy soil beds that support long-term growth. We’ll explore cover crops, companion planting, and simple soil observations — and you’ll leave with a mini planting plan you can apply at home.",
+    descJP:"畑づくりの要である「土」にじっくり向き合う実践回です。被覆作物（カバークロップ）や相性の良い植物の組み合わせを試しながら、土の手触り・呼吸・状態を一緒に観察します。最後には、自分の小さな畑の植え付け計画を持ち帰れます。",
+    bulletsEN:["Bed preparation & layering","Quick soil feel & structure test","Cover crop and companion planting practice","Create your own small-plot plan"],
+    bulletsJP:["畝と土のレイヤーづくり","土の手触りと状態の簡単チェック","カバークロップとコンパニオンの組み合わせ実践","自分用のミニ畑プランを作成"]
+  },
+  {
+    date:{day:"21", mon:"DEC", full:"2025-12-21T13:00:00"},
+    cat:"Garden",
+    kind:"recurring",
+    recurEN:"Every 3rd Sunday",
+    recurJP:"毎月第3日曜",
+    titleEN:"Compost Area: From Scraps to Soil",
+    titleJP:"コンポストスペース：畑・キッチンの残さから土へ",
+    hostEN:"Garden Crew",
+    hostJP:"ガーデンチーム",
+    time:"13:00–15:00",
+    capacity:24,
+    img: imgUrl("images/Compost.jpg"),
+    descEN:"A monthly hands-on compost session. We build and turn piles, check heat, observe microbial activity, and harvest finished compost when ready. Kids help track the cycle—it's a slow transformation we witness together.",
+    descJP:"毎月開催のコンポスト実践回。山をつくり、切り返し、温度と発酵の進みを観察しながら、熟成した土を収穫します。残さがゆっくりと土へと変わっていく過程を、みんなで見守る時間です。",
+    bulletsEN:["Bring clean veggie scraps","How to log temperature and moisture","Sifting finished compost into usable soil"],
+    bulletsJP:["野菜くず(生)を持参OK","温度ログの付け方","ふるいで仕上げる“土の会”"]
+  },
+  {
+    date:{day:"11", mon:"JAN", full:"2026-01-11T10:00:00"},
+    cat:"Garden",
+    kind:"special",
+    titleEN:"Drying Lab: Fruits, Beans & Winter Herbs",
+    titleJP:"自然乾燥：果物・豆・冬のハーブ",
+    hostEN:"Jean-Pierre Laurent & Noah Kim",
+    hostJP:"ジョン・ピエール・ローラン & キム・ノア",
+    time:"10:00–12:30",
+    capacity:15,
+    img: imgUrl("images/Drying.jpg"),
+    descEN:"Explore different drying methods: sun, airflow, and low-heat techniques. We’ll flavor with citrus peels and herbs, then pack your own seasonal snack jars to take home.",
+    descJP:"天日・送風・低温乾燥の違いを比べながら、柑橘ピールやハーブで香りをつけます。仕上げは「冬のおやつ瓶」をつくってお持ち帰り。",
+    bulletsEN:["Low-heat oven setup","Dehydrator alternatives","Labeling and storage for long winter keeping"],
+    bulletsJP:["低温オーブンの設定","代用できる乾燥方法","ラベルと保存のコツ"]
+  },
+
+  /* ---------- CRAFT ---------- */
+  {
+    date:{day:"07", mon:"DEC", full:"2025-12-07T13:30:00"},
+    cat:"Craft",
+    kind:"special",
+    titleEN:"Seasonal Vision Board (Analog + Tiny Digital)",
+    titleJP:"季節のビジョンボード（手作り＋デジタル化）",
+    hostEN:"Elena Rossi",
+    hostJP:"エレナ・ロッシ",
+    time:"13:30–16:30",
+    capacity:14,
+    img: imgUrl("images/VisionBoard.jpg"),
+    descEN:"Slow collage time with magazines, textures, and color swatches. Optionally scan or photograph your board to turn it into a mini phone wallpaper.",
+    descJP:"雑誌や紙片を切って・重ねて・貼るゆっくりした時間。完成したボードは撮影して、スマホ用の小さな壁紙にもできます。",
+    bulletsEN:["All tools & paper provided","Mindful prompt cards","Export your board as a phone wallpaper"],
+    bulletsJP:["道具・素材はすべて準備あり","心を整えるプロンプトカード","スマホ壁紙への変換サポート"]
+  },
+  {
+    date:{day:"20", mon:"DEC", full:"2025-12-20T10:00:00"},
+    cat:"Craft",
+    kind:"recurring",
+    recurEN:"Every 3rd Saturday",
+    recurJP:"毎月第3土曜",
+    titleEN:"Natural Dyeing with Garden Plants",
+    titleJP:"庭の植物で自然染め",
+    hostEN:"Craft Studio",
+    hostJP:"クラフトスタジオ",
+    time:"10:00–13:00",
+    capacity:12,
+    img: imgUrl("images/Dyeing.jpg"),
+    descEN:"Experiment with onion skins, avocado pits, persimmon peel dye, and winter herbs. Bring a small cotton item to dye. We’ll explore gentle mordants and notice how colors deepen as they rest through the season.",
+    descJP:"玉ねぎの皮、アボカドの種、柿の皮の染液、庭の冬ハーブで染めの実験をします。小さなコットン製品をご持参ください。媒染と、時間とともに「色が育つ」感覚を味わいます。",
+    bulletsEN:["Warm extraction & simmering techniques","Gentle mordants (alum & soy milk base)","Swatch cards for seasonal color notes"],
+    bulletsJP:["弱火でじっくり抽出する方法","やさしい媒染（ミョウバン・豆乳下地）","季節の色を記録するスワッチカード"]
+  },
+  {
+    date:{day:"25", mon:"JAN", full:"2026-01-25T14:00:00"},
+    cat:"Craft",
+    kind:"special",
+    titleEN:"Botanical Candles + Winter Moisturizer",
+    titleJP:"ボタニカルキャンドルと冬の保湿クリーム",
+    hostEN:"Zara Ahmed & María López",
+    hostJP:"ザラ・アメッド & マリア・ロペズ",
+    time:"14:00–17:00",
+    capacity:16,
+    img: imgUrl("https://images.unsplash.com/photo-1556760544-74068565f05c?auto=format&fit=crop&w=1200&q=80"),
+    descEN:"Pour floral botanical candles and blend a simple winter balm using beeswax and garden herbs. A fragrant workshop perfect for gifting season.",
+    descJP:"花やハーブを使ったボタニカルキャンドルを流し込み、ミツロウと庭のハーブで冬の保湿バームをつくります。贈り物にもぴったり。",
+    bulletsEN:["Wick setting & pour technique","Scent pairing and seasonal tones","Labeling & gift wrapping"],
+    bulletsJP:["芯の扱いと注ぎ方","香りの組み合わせの基礎","ラベルとギフト包装コーナー"]
+  },
+
+  /* ---------- EXAMPLE PAST EVENT (kept for archive) ---------- */
+  {
+    date:{day:"29", mon:"OCT", full:"2025-10-29T13:00:00"},
+    cat:"Craft",
+    kind:"special",
+    titleEN:"(Past) Garden Pressed-Leaf Zines",
+    titleJP:"【終了】葉っぱのプレスでつくるZINE",
+    hostEN:"Natsuko Mori",
+    hostJP:"森夏子",
+    time:"13:00–15:30",
+    capacity:12,
+    img: imgUrl("images/Zine.jpg"),
+    descEN:"We pressed autumn leaves into tiny story zines and traded them.",
+    descJP:"秋の葉を小さな物語のZINEにプレスして交換しました。",
+    bulletsEN:["Leaf pressing","Simple saddle stitch","Zine swap"],
+    bulletsJP:["葉のプレス","簡単な中綴じ","ZINE交換会"]
+  }
+];
+
+    const spaces = [
+  {
+    key: "Cafe",
+    title: "Café & Kitchen",
+    color: "#A9825A",
+    hero: "images/Cafe.jpg",
+    // Card teaser (short)
+    cardDescEN: "Dive into the wonders of food, flavor, and connection.",
+    cardDescJP: "食の奥深さとつながりを味わおう。",
+    // Full page description
+    pageDescEN: "Seasonal menus, communal cooking, and conversations that bring joy to the table.",
+    pageDescJP: "季節のメニュー、地元料理、調理と対話を通して喜びを共有する。",
+    blocks: [
+    { hEN: "Seasonal Menu",     hJP: "季節のメニュー",
+      pEN: "Rotating dishes inspired by our garden and partner farms.",
+      pJP: "庭や提携農家に着想を得た日替わり料理。" },
+    { hEN: "Community Cooking", hJP: "みんなのキッチン",
+      pEN: "Open-kitchen days where everyone has a small role to play.",
+      pJP: "キッチン開放。小さな役割を分け合いながら、一緒に作り一緒に食べる。" },
+    { hEN: "Tea & Dialogue",    hJP: "お茶会",
+      pEN: "Herbal tea and reading sessions with gentle shared prompts.",
+      pJP: "ハーブティーを片手に、語り合うひととき。" }
+    ]
+  },
+  {
+    key: "Garden",
+    title: "Farm & Garden",
+    color: "#6E8C64",
+    hero: "images/Garden.jpg",
+    cardDescEN: "Discover how food, nature, and creativity grow together.",
+    cardDescJP: "食べることも、育てることも、つくることも、ここで全部つながる。",
+    pageDescEN: "Through seed-saving, composting, and a small garden, we grow soil → food → community.",
+    pageDescJP: "タネの保存、堆肥づくり、癒しの菜園。土から食、そしてコミュニティへ。",
+    blocks: [
+    { hEN: "Harvest Calendar", hJP: "収穫カレンダー",
+      pEN: "An interactive seasonal guide with community shift schedules.",
+      pJP: "季節ごとの作業やコミュニティの役割をひと目で。" },
+    { hEN: "Seed Library",     hJP: "種の倉庫",
+      pEN: "Borrow, grow, and return seeds through labeling workshops.",
+      pJP: "タネを借りて育て、次の季節に返す。ラベルづくりのワークショップも。" },
+    { hEN: "Compost Area",   hJP: "コンポスト作り",
+      pEN: "Transform kitchen scraps into soil; participants help track the cycle.",
+      pJP: "台所の生ごみを土へ。参加者が循環を記録。" }
+    ]
+  },
+  {
+    key: "Library",
+    title: "Library & Workshop",
+    color: "#A7C4D6",
+    hero: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1400&q=80",
+    cardDescEN: "A cozy hub of knowledge, creativity, and discovery",
+    cardDescJP: "知と創造と発見がめぐる居心地のよい拠点。",
+    pageDescEN: "Reading nooks, craft tables, and a zine shelf — where ideas turn into practice.",
+    pageDescJP: "読書のこもり席、手しごとの机、ジン棚――理論と実践が行き交う場所。",
+    blocks: [
+    { hEN: "Reading Circles", hJP: "リーディングサークル",
+      pEN: "Monthly bilingual gatherings around shared themes and reflections.",
+      pJP: "毎月、二言語でテーマとふり返りを分かち合う集い。" },
+    { hEN: "Makers’ Bench",   hJP: "メイカーズ・ベンチ",
+      pEN: "Producing natural textiles, shaping clay, and crafting with paper.",
+      pJP: "布をつくり、土を練り、紙で手しごとを楽しむ。" },
+    { hEN: "Zine Press",      hJP: "ジン・プレス",
+      pEN: "Print small magazines to share stories and local wisdom.",
+      pJP: "小さな冊子を刷って、物語とローカルな知恵を共有。" }
+    ]
+  }
+];
+
+    const stories = [
+      {
+        key: 0,
+        titleEN: "The Art of Slow Living",
+        titleJP: "スローリビングの技法",
+        by: "Visitor",
+        minutes: 3,
+        img: imgUrl("images/SlowLiving.jpg"),
+        bodyEN: `
+          The first time I noticed the pace of this place was when I heard the onions.<br>
+          Not sizzling—just breathing in oil. Like a sigh. Long and slow.<br><br>
+          I had rushed here from a train that was late, from messages I hadn’t replied to, from a brain that had been sprinting for days. I thought “slow living” was an aesthetic. Linen shirts. Wooden spoons. Sunlight on floors.<br>
+          But it was actually just… a room where no one was hurrying.<br><br>
+          A grandmother sliced carrots with no concern for uniformity. A teenager grated ginger as if it were a secret task. Someone hummed. I don’t know who. It matched the simmering sound.<br><br>
+          There were no instructions. No schedule. Just: stay with the thing you're doing.<br><br>
+          When we finally ate, nobody said anything profound. Someone just softly laughed into their bowl. I didn’t know why, but I laughed too.<br>
+          I didn’t realize until much later that my shoulders had dropped.<br><br>
+          <em>Slow living wasn’t a choice. It was something the room lent me. And I accepted.</em>
+        `,
+        bodyJP: `
+          最初に気づいたのは、玉ねぎの音だった。<br>
+          ジュッと急かす音じゃなくて、油の中で、ふう…って息をしているみたいな音。<br><br>
+          ここへ来る前の私は、電車に追われ、通知に追われ、「考える前に反応する」みたいな数日を過ごしていた。スローリビングなんて、おしゃれインテリアの話だと思ってた。<br>
+          でもこの部屋は、ただ「誰も急いでいない」だけの場所だった。<br><br>
+          おばあちゃんが、包丁をゆっくり下ろす。高校生が、生姜をすりながらリズムを刻む。誰かが小さく鼻歌を歌っていて、それがじっくり煮える音とぴったり合っていた。<br><br>
+          決まりも、段取りもない。ただ、自分がいま手にしているものと一緒にいるだけ。<br><br>
+          食べ終わったとき、誰かが、ほっと笑った。理由はなかったけど、私も笑った。<br>
+          あとで気づいた。肩の力がとっくに抜けていたことに。<br><br>
+          <em>「スローに生きる」は意志じゃなくて、この部屋がそっと貸してくれた状態だった。</em>
+        `,
+        quoteEN: "Learning begins where curiosity meets kindness.",
+        quoteJP: "学びは、好奇心がやさしさに出会うところから。"
+      },
+
+      {
+        key: 1,
+        titleEN: "Seeds of Connection",
+        titleJP: "つながりのタネ",
+        by: "Volunteer",
+        minutes: 3,
+        img: imgUrl("images/Seed.jpg"),
+        bodyEN: `
+          The seed exchange started accidentally. Someone had brought extra shiso seedlings. Someone else had too much mint. I had basil that refused to die.<br>
+          We put them on the table.<br><br>
+          A quiet man—he always sits near the window—picked up a tomato seedling and said, almost to himself, “My mother used to grow these.”<br>
+          Everyone heard him. No one intruded. We just… made space.<br><br>
+          He told us how she’d tap the sides of seed trays before watering, how she said it was “waking the roots.” He demonstrated, gently tapping the table. We watched.<br>
+          Then one of the kids tried it. Then everyone did.<br>
+          Tap. Tap. Tap.<br><br>
+          Ridiculous. Beautiful.<br><br>
+          That week the group chat filled with garden updates—bad soil, new leaves, photos of slanted balcony pots. But mostly:<br>
+          “I tapped the tray today. Feels like saying good morning.”<br><br>
+          <em>Seeds are supposed to grow in soil. But maybe they grow in stories too.</em>
+        `,
+        bodyJP: `
+          タネの交換会は、もともと予定されていなかった。誰かが余った紫蘇の苗を持ってきて、別の誰かがミントを抱えてきて、私は、なぜか生命力が強すぎるバジルを持ってきた。<br>
+          机に並べたら、それだけで何かが始まった。<br><br>
+          いつも窓側に座る、あの静かな人がトマトの苗を手にして、ぽつりと言った。<br>
+          「これ、母が育ててたんです」<br>
+          誰も「詳しく聞かせて」とは言わなかった。ただ、少し空気が柔らかくなった。<br><br>
+          彼は、種まきの前にトレイをそっと指で「トントン」と叩く癖を見せてくれた。「根っこを起こす合図なんですって」。<br>
+          子どもが真似して、やがてみんなでトントン、トントン。<br>
+          可笑しくて、そしてやさしい光景だった。<br><br>
+          その週、チャットは植物の写真でいっぱいになった。傾いた植木鉢、伸びすぎた茎、うまくいかない土。でもみんな、こう書いていた。<br>
+          「今日もトントンしたよ。おはようって。」<br><br>
+          <em>タネは土でも育つけれど、たぶん“物語”でも育つ。</em>
+        `,
+        quoteEN: "We grow soil, then food, then community.",
+        quoteJP: "土を育て、食を育て、コミュニティを育てる。"
+      },
+
+      {
+        key: 2,
+        titleEN: "Unexpected Learning Becomes the New Norm",
+        titleJP: "予期せぬ学びが日常になる場所",
+        by: "Community Member",
+        minutes: 3,
+        img: imgUrl("images/Mending.jpg"),
+        bodyEN: `
+          We were supposed to be learning repair skills. Sewing, patching, invisible mending. Practical things.<br>
+          Instead, we learned each other.<br><br>
+          I sat beside a woman who stitched like she was holding her breath. I asked where she learned. She didn’t answer for a long time. Then she said her grandmother used to sew dresses during storms to keep calm.<br>
+          “Thunder makes me tremble,” she said. “Sewing keeps my hands busy while my heart remembers how to be inside my ribs.”<br><br>
+          We kept stitching. No advice. No fixing.<br>
+          The room was quiet except for thread sliding through cotton.<br><br>
+          My patch came out uneven. She smiled at it like it was a child’s drawing.<br>
+          <em>“Not everything should be invisible,”</em> she said.<br><br>
+          I realized the workshop wasn’t about repairing fabric. It was about letting the tear be seen—and choosing to mend anyway.
+        `,
+        bodyJP: `
+          この日のテーマは「布の修繕」だった。実用的な、手を動かすワークショップ。<br>
+          でも、実際に縫われていたのは、もっと別の何かだった。<br><br>
+          隣の席の女性は、息を止めるみたいに細かく針を動かしていた。どこで覚えたのか聞いたら、しばらく黙ってから言った。<br>
+          「嵐の日、祖母はずっと縫い物をしてたんです。雷が怖いと手が震えるから、手に仕事をさせるんだって。」<br><br>
+          私たちは針を進め続けた。助言もしない、直し合いもしない。ただ、糸が布を通る音だけが続いた。<br><br>
+          私の補修は端が少し歪んだ。でも彼女は、宝物を見るみたいにそれを見つめて言った。<br>
+          <em>「直した跡が見えるの、いいですね。」</em><br><br>
+          そのときわかった。これは布を直す会ではなく、ほつれを「見えるまま」にして、それでも直そうと決める会だったのだと。
+        `,
+        quoteEN: "Start with what’s at hand. Learn in public.",
+        quoteJP: "手元から始める。学びはみんなの前で。"
+      },
+
+      {
+        key: 3,
+        titleEN: "Book Café Reviews",
+        titleJP: "ブックカフェのレビュー",
+        by: "Community Member",
+        minutes: 3,
+        img: imgUrl("images/BookReading.jpg"),
+        bodyEN: `
+          We don’t really review books. We review the moment we met them.<br><br>
+          Last week I read a poetry collection cornered between a sleepy cat and a kettle that wouldn’t stop clicking. Halfway through a poem about loneliness, the kettle finally boiled—loud, abrupt—and I laughed way too hard.<br>
+          Someone looked over. We locked eyes. They laughed too. No reason. Just the shared absurdity of water reaching the temperature it was always going to reach.<br><br>
+          Later, I wrote my review on a scrap of paper:<br>
+          <em>“Read while waiting for something. It will make the waiting feel alive.”</em><br>
+          I tucked it between the pages.<br><br>
+          I think someone found it. Because today the book is gone, but there’s a new scrap inside a different one:<br>
+          <em>“This one isn’t for reading. Just hold it when you’re sad.”</em><br><br>
+          The café has become a place where books talk to us through strangers’ handwriting. I like to think we’re all writing to each other without needing to meet.
+        `,
+        bodyJP: `
+          ここでは本の評価はしない。「本と出会った瞬間」を記録する。<br><br>
+          先週は、眠そうな猫と、止まらないケトルの「カチ、カチ…」に挟まれて詩集を読んだ。孤独についての詩の途中で、お湯がいきなり沸騰した。大きく、唐突に。私はなぜか笑ってしまった。<br>
+          向かいの人と目が合って、相手も笑った。理由はない。ただ、水がいつか必ず沸くという当たり前を、一緒に目撃しただけ。<br><br>
+          後で、紙切れにこう書いて本に挟んだ。<br>
+          <em>「何かを待つ時間に読むと、待ち時間が生き物になる。」</em><br><br>
+          たぶん誰かが見つけたのだろう。今日はその本が棚から消えて、別の本には新しい紙が挟まっていた。<br>
+          <em>「この本は読むためじゃない。悲しい日に、ただ抱えていて。」</em><br><br>
+          本は、知らない誰かの手書きを通して私たちに話しかける。会わなくても、私たちは互いに手紙を書いているのだと思う。
+        `,
+        quoteEN: "A good café leaves room for your thoughts to sit down.",
+        quoteJP: "よいカフェは、考えが腰を下ろせる余白をくれる。"
+      }
+    ];
+
+    /* STATE */
+    let lang = localStorage.getItem("fusion_lang") === "JP" ? "JP" : "EN";
+    const app = document.getElementById("app");
+    const t = () => dict[lang];
+
+    function navigate(to){ if(location.hash.slice(1)!==to) location.hash = to; window.scrollTo({top:0,behavior:"smooth"}); }
+    function pad(n){ return n.toString().padStart(2,'0'); }
+    function formatISO(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+
+    function countdownLabel(dateStr){ const now=new Date(); const eventDate=new Date(dateStr); const diff=eventDate-now; const days=Math.floor(diff/(1000*60*60*24)); const hours=Math.floor((diff%(1000*60*60*24))/(1000*60*60)); return diff>0?`⏰ ${days}${t().daysLeft} ${hours}${t().hoursLeft}`:`<span style="color: var(--sage-green);">${t().happeningNow}</span>`; }
+
+    function backBar(label,to){ return `<div class="max-w-6xl mx-auto px-4"><button onclick="navigate('${to}')" class="text-sm inline-flex items-center gap-2 mb-6" style="color:var(--forest-green);"><span class="inline-block rotate-180">➜</span> ${label}</button></div>`; }
+    function card(inner){ return `<div class="overflow-hidden bg-white rounded-xl shadow-sm border-0 card-hover">${inner}</div>`; }
+
+    /* ---------- JAPANESE HOLIDAYS (2000–2150 approx) ---------- */
+    function nthMonday(year, month, n){ // month: 1-12
+      const first=new Date(year, month-1,1); const day=(1-first.getDay()+7)%7; // 0=Sun
+      return new Date(year, month-1, 1+day + 7*(n-1));
+    }
+    function vernalEquinoxDay(year){ // around Mar 20
+      const d = Math.floor(20.8431 + 0.242194*(year-1980)) - Math.floor((year-1980)/4);
+      return new Date(year,2,d); // March (2)
+    }
+    function autumnalEquinoxDay(year){ // around Sep 23
+      const d = Math.floor(23.2488 + 0.242194*(year-1980)) - Math.floor((year-1980)/4);
+      return new Date(year,8,d); // September (8)
+    }
+    function jpholidays(year){
+      const H={};
+      const add=(dt,name)=>{ const k=formatISO(dt); H[k]=name; };
+      add(new Date(year,0,1), '元日');
+      add(nthMonday(year,1,2),'成人の日');
+      add(new Date(year,1,11),'建国記念の日');
+      add(new Date(year,1,23),'天皇誕生日');
+      add(vernalEquinoxDay(year),'春分の日');
+      add(new Date(year,3,29),'昭和の日');
+      add(new Date(year,4,3),'憲法記念日');
+      add(new Date(year,4,4),'みどりの日');
+      add(new Date(year,4,5),'こどもの日');
+      add(nthMonday(year,7,3),'海の日');
+      add(new Date(year,7,11),'山の日');
+      add(nthMonday(year,9,3),'敬老の日');
+      add(autumnalEquinoxDay(year),'秋分の日');
+      add(nthMonday(year,10,2),'スポーツの日');
+      add(new Date(year,10,3),'文化の日');
+      add(new Date(year,10,23),'勤労感謝の日');
+      // 振替休日 (if holiday on Sunday, next weekday becomes holiday)
+      const dates=Object.keys(H).sort();
+      dates.forEach(k=>{ const d=new Date(k); if(d.getDay()===0){ // Sunday
+        let i=1; while(true){ const sub=new Date(d); sub.setDate(d.getDate()+i); const key=formatISO(sub); if(!H[key] && sub.getDay()!==0){ H[key]=H[k]+'（振替休日）'; break; } i++; }
+      }});
+      // 国民の休日 (sandwich day between two holidays)
+      for(let m=0;m<12;m++){
+        for(let d=1; d<=31; d++){
+          const dt=new Date(year,m,d); if(dt.getMonth()!==m) break; const k=formatISO(dt);
+          const prev=new Date(year,m,d-1); const next=new Date(year,m,d+1);
+          const kp=formatISO(prev), kn=formatISO(next);
+          if(!H[k] && H[kp] && H[kn] && dt.getDay()!==0 && dt.getDay()!==6){ H[k]='国民の休日'; }
+        }
+      }
+      return H;
+    }
+
+    /* ---------- BUSINESS DAYS CONFIG ---------- */
+    // 0=Sun 1=Mon ... 6=Sat
+    const businessClosedWeekdays = [2]; // e.g., closed every Tuesday
+    const exceptionalClosed = new Set([ /* '2025-12-30' etc */ ]);
+    const exceptionalOpen   = new Set([ /* override closed/holiday */ ]);
+
+    function isClosed(dateISO, dt, holidays){
+      if(exceptionalOpen.has(dateISO)) return false;
+      if(exceptionalClosed.has(dateISO)) return true;
+      const isHoliday = !!holidays[dateISO];
+      const isWeeklyClosed = businessClosedWeekdays.includes(dt.getDay());
+      return isHoliday || isWeeklyClosed;
+    }
+
+    /* ---------- EVENTS MAP ---------- */
+    function eventsByDate(){
+      const map={};
+      eventList.forEach(e=>{ const d=new Date(e.date.full); const key=formatISO(d); if(!map[key]) map[key]=[]; map[key].push(e); });
+      return map;
+    }
+
+    /* ---------- CALENDAR RENDER ---------- */
+    function monthMatrix(year, monthIndex){ // monthIndex 0-11
+      const first = new Date(year, monthIndex, 1);
+      const start = new Date(first);
+      // move back to the SUNDAY on/before the 1st
+      start.setDate(1 - first.getDay()); // 0=Sun, 1=Mon, ...
+      const cells = [];
+      for (let i = 0; i < 42; i++) {
+        const d = new Date(start);
+        d.setDate(start.getDate() + i);
+        cells.push(d);
+      }
+      return cells;
+    }
+
+    function MonthView(year, monthIndex, holidays, evMap){
+      const monthName = new Date(year,monthIndex,1).toLocaleString(lang==='EN'?'en-US':'ja-JP', { month:'long', year:'numeric' });
+      const dow = (lang==='EN')? ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] : ['日','月','火','水','木','金','土'];
+      const cells = monthMatrix(year, monthIndex);
+      const todayISO = formatISO(new Date());
+      return `
+      <div class="cal-wrap">
+        <div class="cal-header"><div class="cal-title">${monthName}</div></div>
+        <div class="cal-grid">
+          ${dow.map(d=>`<div class="cal-dow text-center">${d}</div>`).join('')}
+          ${cells.map(d=>{
+            const iso = formatISO(d);
+            const inMonth = d.getMonth()===monthIndex;
+            const holName = holidays[iso];
+            const closed = isClosed(iso, d, holidays);
+            const evs = evMap[iso]||[];
+            const isToday = iso===todayISO;
+            const classes = [ 'cal-cell', inMonth?'':'cal-other-month', isToday?'cal-today':'', holName?'cal-holiday':'', closed&&!holName?'cal-closed':'cal-open' ].join(' ');
+            const dotColor = holName? 'background:var(--holiday)' : (closed? 'background:var(--closed)' : 'background:var(--open)');
+            return `
+              <div class="${classes}">
+                <div class="flex items-center justify-between">
+                  <span class="cal-date">${d.getDate()}</span>
+                  <span class="cal-chip">${holName ? (lang==='EN'?'Holiday':'祝日') : (closed ? (lang==='EN'?'Closed':'休業') : (lang==='EN'?'Open':'営業'))}</span>
+                </div>
+                <div class="mt-2">
+                  ${evs.slice(0,4).map(()=>`<span class="cal-dot" style="${dotColor}"></span>`).join('')}
+                  ${evs.length>4?`<span class="text-xs opacity-60">+${evs.length-4}</span>`:''}
+                </div>
+                <div class="cal-tooltip">
+                  <div class="font-semibold mb-1">${holName? holName+' ・ ':''}${closed && !holName ? (lang==='EN'?'Closed':'休業'): (!closed ? (lang==='EN'?'Open':'営業'):'')}</div>
+                  ${evs.length? evs.map(e=>`<div class="mb-1">• ${(lang==='EN'?e.titleEN:e.titleJP)} <span class="opacity-75">(${e.time})</span></div>`).join('') : `<div class="opacity-70">${t().calNoEvents}</div>`}
+                </div>
+              </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }
+
+    function CalendarPage(){
+      const now=new Date();
+      const year1=now.getFullYear(); const month1=now.getMonth();
+      const next=new Date(year1, month1+1, 1);
+      const year2=next.getFullYear(); const month2=next.getMonth();
+      const holidays = { ...jpholidays(year1), ...jpholidays(year2) };
+      const evMap = eventsByDate();
+      const legend = `
+        <div class="flex items-center gap-4 flex-wrap text-sm">
+          <span class="flex items-center gap-2"><span class="legend-dot" style="background:var(--open)"></span>${t().calOpen}</span>
+          <span class="flex items-center gap-2"><span class="legend-dot" style="background:var(--closed)"></span>${t().calClosed}</span>
+          <span class="flex items-center gap-2"><span class="legend-dot" style="background:var(--holiday)"></span>${t().calHoliday}</span>
+        </div>`;
+      return `
+      <section class="max-w-6xl mx-auto py-16 px-4 fade-enter">
+        <div class="flex items-center justify-between mb-4"><h2 class="text-4xl font-serif" style="color:var(--forest-green);">${t().calTitle}</h2></div>
+        <div class="mb-6">${legend}</div>
+        <div class="grid md:grid-cols-2 gap-6">
+          ${MonthView(year1, month1, holidays, evMap)}
+          ${MonthView(year2, month2, holidays, evMap)}
+        </div>
+        <div class="mt-8 text-sm text-[var(--olive)]">${lang==='EN' ? 'Tip: Hover a day to see events and holiday names. Closed weekday is irregular.' : '※日付にカーソルで、イベントや祝日名を表示。定休日は不定期。'}</div>
+      </section>`;
+    }
+
+    /* ----------- Detail pages (unchanged structure) ----------- */
+    function SpaceDetail(spaceObj){
+      return `
+        ${backBar(t().backSpaces,"Spaces")}
+        <section class="max-w-6xl mx-auto px-4 fade-enter">
+          <div class="relative h-60 md:h-80 rounded-2xl overflow-hidden shadow">
+            <img src="${spaceObj.hero}" class="w-full h-full object-cover" alt="${spaceObj.title}"/>
+            <div class="absolute inset-0 bg-black/20"></div>
+            <h2 class="absolute bottom-4 left-4 text-white text-3xl md:text-4xl font-serif">${spaceObj.title}</h2>
+          </div>
+
+          <p class="mt-6 text-lg leading-relaxed max-w-3xl">
+            ${lang === 'EN' ? spaceObj.pageDescEN : spaceObj.pageDescJP}
+          </p>
+
+          <div class="grid md:grid-cols-3 gap-6 mt-10">
+            ${spaceObj.blocks.map(b => card(`
+              <div class="p-6">
+                <h3 class="text-xl font-semibold mb-2" style="color:${spaceObj.color}">
+                  ${lang === 'EN' ? b.hEN : b.hJP}
+                </h3>
+                <p class="text-sm text-gray-700">
+                  ${lang === 'EN' ? b.pEN : b.pJP}
+                </p>
+              </div>
+            `)).join("")}
+          </div>
+        </section>`;
+    }
+    function EventDetail(e){
+      const isRecurring = e.kind === "recurring";
+      const scheduleLabel = isRecurring
+        ? (lang==='EN' ? e.recurEN : e.recurJP)
+        : new Date(e.date.full).toLocaleString(lang==='EN'?'en-US':'ja-JP', { dateStyle:'full', timeStyle:'short' });
+
+      const cap = e.capacity ?? 12;
+      const bullets = (lang==='EN' ? e.bulletsEN : e.bulletsJP) || [];
+
+      return `
+      ${backBar(t().backEvents,"Events")}
+      <section class="max-w-3xl mx-auto px-4 fade-enter">
+        <div class="flex items-center gap-3 mb-2">
+          <span class="text-xs px-2 py-1 rounded-full" style="background:${isRecurring?'#E8DCC4':'#8B9D83'}; color:${isRecurring?'#2C2A28':'#fff'};">
+            ${isRecurring ? (lang==='EN'?'Recurring':'定期開催') : (lang==='EN'?'One-day Special':'特別開催')}
+          </span>
+          <span class="text-xs px-2 py-1 rounded-full border" style="border-color:var(--warm-beige);">
+            ${e.cat}
+          </span>
+        </div>
+
+        <h2 class="text-3xl md:text-4xl font-serif mb-2">${lang==='EN'?e.titleEN:e.titleJP}</h2>
+        <p class="text-gray-700 mb-4">
+          ${t().date} <strong>${scheduleLabel}</strong> · ${t().time} <strong>${e.time}</strong> · ${t().capacity} <strong>${cap}</strong>
+        </p>
+
+        <img src="${e.img}" alt="event" class="rounded-xl shadow mb-6"/>
+
+        <p class="text-lg leading-relaxed mb-4">${lang==='EN'?e.descEN:e.descJP}</p>
+
+        ${bullets.length ? `
+          <ul class="list-disc ml-6 text-[0.95rem] leading-relaxed mb-6">
+            ${bullets.map(b=>`<li>${b}</li>`).join('')}
+          </ul>` : ''}
+
+        <button class="btn" style="background: var(--terracotta); color:#fff;">${t().reserve}</button>
+      </section>`;
+    }
+    function StoryDetail(s){
+      return `
+        ${backBar(t().backStories,"Stories")}
+        <section class="max-w-3xl mx-auto px-4 fade-enter">
+          <h2 class="text-3xl md:text-4xl font-serif mb-2">
+            ${lang==="EN" ? s.titleEN : s.titleJP}
+          </h2>
+          <p class="text-gray-600 mb-4">
+            ${lang==="EN" ? "By" : "執筆"}: ${s.by} · ${s.minutes} ${t().minRead}
+          </p>
+
+          <img src="${s.img}" alt="story" class="rounded-xl shadow mb-6"/>
+
+          <div class="text-lg leading-relaxed mb-4">
+            ${lang==="EN" ? formatBody(s.bodyEN) : formatBody(s.bodyJP)}
+          </div>
+
+          <blockquote class="italic border-l-4 pl-4"
+            style="border-color:var(--warm-beige); color:var(--charcoal);">
+            ${lang==="EN" ? s.quoteEN : s.quoteJP}
+          </blockquote>
+        </section>`;
+    }
+
+    function StatsSection(){ const stats=[{num:150,label:t().communityMembers,icon:"👥"},{num:24,label:t().monthlyWorkshops,icon:"🎨"},{num:300,label:t().gardenHarvests,icon:"🌿"},{num:8,label:t().languagesSpoken,icon:"🌐"},]; return `<section class="py-16" style="background: linear-gradient(135deg, rgba(139,157,131,0.1) 0%, rgba(232,220,196,0.3) 100%);"><div class="max-w-6xl mx-auto px-4"><h3 class="text-3xl font-serif text-center mb-10" style="color: var(--forest-green);">${t().byTheNumbers}</h3><div class="grid md:grid-cols-4 gap-8 text-center">${stats.map(stat=>`<div class="stat-counter" data-target="${stat.num}" data-duration="2000"><div class="text-5xl mb-2 icon-pulse rounded-full w-20 h-20 mx-auto flex items-center justify-center">${stat.icon}</div><div class="text-4xl font-bold counter" style="color: var(--forest-green);">0</div><div class="text-sm mt-1" style="color: var(--olive);">${stat.label}</div></div>`).join("")}</div></div></section>`; }
+
+    function SeasonalCalendar(){ const seasons={ spring:{icon:"🌸",color:"#FFB7D5",actEN:"Seed Planting",actJP:"種まき",months:lang==='EN'?"Mar-May":"3-5月"}, summer:{icon:"🌻",color:"#FFD93D",actEN:"Harvest Festival",actJP:"収穫祭",months:lang==='EN'?"Jun-Aug":"6-8月"}, autumn:{icon:"🍂",color:"#FF8C42",actEN:"Preserving Workshop",actJP:"保存食作り",months:lang==='EN'?"Sep-Nov":"9-11月"}, winter:{icon:"❄️",color:"#6BB6FF",actEN:"Indoor Crafts",actJP:"室内工芸",months:lang==='EN'?"Dec-Feb":"12-2月"}}; return `<section class="py-16" style="background: var(--cream);"><div class="max-w-6xl mx-auto px-4"><h3 class="text-3xl font-serif text-center mb-10" style="color: var(--forest-green);">${t().seasonalRhythm}</h3><div class="grid md:grid-cols-4 gap-6">${Object.entries(seasons).map(([key,s])=>`<div class="rounded-xl p-6 text-center cursor-pointer season-card" style="background: linear-gradient(135deg, ${s.color}20 0%, ${s.color}40 100%); border: 2px solid ${s.color}80; transition:all .3s;"><div class="mb-3"><span class="inline-block animate-bounce-subtle"><span class="season-emoji text-6xl inline-block">${s.icon}</span></span></div><div class="text-lg font-semibold capitalize mb-1">${t()[key]}</div><div class="text-xs mb-3" style="color: var(--olive);">${s.months}</div><div class="text-sm">${lang==='EN'?s.actEN:s.actJP}</div></div>`).join("")}</div></div></section>`; }
+
+    function TestimonialCarousel(){ const testimonials=[{quoteEN:"I used to understand food in a practical way. The community cooking sessions have shown me that it is a language of connection — expressed through time, efforts, and stories we create.",quoteJP:"食事は栄養を摂るためだけのものだと思っていました。コミュニティのみんなで料理をする中で、それは「つながり」そのものなんだと気づいた。共に過ごす時間、込めた想い、生まれる会話、すべて物語ってる。",name:"Aisha Karim",roleEN:"Cafe Regular",roleJP:"カフェ常連",img:"🧑‍🍳"},{quoteEN:"I came to learn Japanese, but I found a second family here.",quoteJP:"日本語を学びに来ましたが、ここで第二の家族を見つけました。",name:"Samuel Okoye",roleEN:"Language Exchange Member",roleJP:"言語交換参加者",img:"👨‍🏫"},{quoteEN:"People taught me how to see.<br>The garden taught me how to wait.",quoteJP:"人は、ものの見方を教えてくれました。庭は、待つことを教えてくれました。",name:"Sakura Tanaka",roleEN:"Garden Volunteer",roleJP:"栽培ボランティア",img:"👩‍🌾"}]; return `<section class="py-16" style="background: linear-gradient(to right, rgba(139,157,131,0.1), rgba(107,124,89,0.1));"><div class="max-w-4xl mx-auto px-4"><h3 class="text-3xl font-serif text-center mb-10" style="color: var(--forest-green);">${t().communityVoices}</h3><div class="testimonial-carousel relative overflow-hidden"><div class="testimonial-track" id="testimonialTrack">${testimonials.map(test=>`<div class="testimonial-slide w-full px-4"><div class="bg-white rounded-2xl p-8 shadow-lg text-center"><div class="text-6xl mb-4">${test.img}</div><p class="text-lg italic mb-4" style="color: var(--charcoal);">"${lang==='EN'?test.quoteEN:test.quoteJP}"</p><div class="text-sm font-semibold" style="color: var(--forest-green);">${test.name}</div><div class="text-xs" style="color: var(--olive);">${lang==='EN'?test.roleEN:test.roleJP}</div></div></div>`).join("")}</div><div class="flex justify-center gap-2 mt-6">${testimonials.map((_,i)=>`<button class="testimonial-dot w-3 h-3 rounded-full" style="background:${i===0?'var(--sage-green)':'var(--warm-beige)'}" onclick="goToTestimonial(${i})"></button>`).join("")}</div></div></div></section>`; }
+
+    function GardenMapSection(){ const plants=[{x:'10%',y:'10%',plant:'🍇',nameEN:'Grapes',nameJP:'葡萄',ready:false},{x:'25%',y:'90%',plant:'🍊',nameEN:'Oranges',nameJP:'みかん',ready:true},{x:'20%',y:'30%',plant:'🍅',nameEN:'Tomatoes',nameJP:'トマト',ready:false},{x:'45%',y:'40%',plant:'🌹',nameEN:'Roses',nameJP:'薔薇',ready:false},{x:'30%',y:'20%',plant:'🫘',nameEN:'Beans',nameJP:'豆',ready:true},{x:'60%',y:'40%',plant:'🫑',nameEN:'Peppers',nameJP:'ピーマン',ready:false},{x:'50%',y:'85%',plant:'🫚',nameEN:'Ginger',nameJP:'生姜',ready:false},{x:'70%',y:'70%',plant:'🥑',nameEN:'Avocadoes',nameJP:'アボカド',ready:false},{x:'80%',y:'90%',plant:'🌻',nameEN:'Sunflower',nameJP:'ひまわり',ready:false},{x:'40%',y:'60%',plant:'🌽',nameEN:'Corn',nameJP:'とうもろこし',ready:false},{x:'75%',y:'25%',plant:'🥕',nameEN:'Carrots',nameJP:'にんじん',ready:true},{x:'90%',y:'75%',plant:'🍠',nameEN:'Sweet Potatoes',nameJP:'さつまいも',ready:true},{x:'15%',y:'70%',plant:'🌿',nameEN:'Herbs',nameJP:'ハーブ',ready:true},{x:'10%',y:'50%',plant:'🌰',nameEN:'Chestnuts',nameJP:'栗',ready:false},{x:'50%',y:'10%',plant:'🥭',nameEN:'Mangoes',nameJP:'マンゴー',ready:false},{x:'90%',y:'40%',plant:'🫐',nameEN:'Berries',nameJP:'ベリー',ready:false},{x:'95%',y:'20%',plant:'🪻',nameEN:'Lavender',nameJP:'ラベンダー',ready:true},]; return `<div class="garden-map my-8"><h3 class="text-2xl font-serif mb-6 text-center">${t().interactiveGarden}</h3><div class="relative w-full rounded-xl overflow-hidden" style="height:24rem; background: linear-gradient(to bottom, rgba(107,124,89,0.2) 0%, rgba(139,157,131,0.3) 100%);">${plants.map(p=>`<div class="plant-marker group" style="left:${p.x}; top:${p.y}; transform:translate(-50%,-50%);"><div class="text-5xl transition-transform ${p.ready?'animate-bounce-subtle':''}" style="${p.ready?'':'opacity:.5;'}">${p.plant}</div><div class="plant-tooltip">${lang==='EN'?p.nameEN:p.nameJP}${p.ready?` • ${t().readyHarvest}`:''}</div></div>`).join("")}</div><div class="text-center text-sm mt-4" style="color: var(--olive);">${t().hoverPlants}</div></div>`; }
+
+    function upcomingEvents(limit = 3){
+      const now = Date.now();
+      return eventList
+        .filter(e => new Date(e.date.full).getTime() >= now)
+        .sort((a,b)=> new Date(a.date.full) - new Date(b.date.full))
+        .slice(0, limit);
+    }
+
+    function HomePage(){
+  return `
+<section class="text-center fade-enter">
+  <section class="relative flex flex-col items-center justify-center text-center bg-cover bg-center"
+           style="height:70vh;background-image:linear-gradient(rgba(139,157,131,.35),rgba(74,93,74,.35)),url('images/Landscape.jpg');">
+    <div class="absolute inset-0" style="background:rgba(245,241,230,.5);"></div>
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <div class="float-element" style="top:20%;left:10%;animation-delay:0s;">🌿</div>
+      <div class="float-element" style="top:60%;right:15%;animation-delay:2s;">🍃</div>
+      <div class="float-element" style="bottom:30%;left:70%;animation-delay:4s;">🌸</div>
+      <div class="float-element" style="top:40%;right:40%;animation-delay:3s;font-size:3rem;opacity:0.1;">🌱</div>
+    </div>
+    <div class="relative z-10 p-6 rounded-xl max-w-3xl border"
+         style="backdrop-filter:blur(12px);border-color:rgba(255,255,255,.4);">
+      <h1 class="text-4xl md:text-6xl font-serif mb-3 text-white" style="text-shadow:0 2px 4px rgba(0,0,0,.3);">${t().heroTitle}</h1>
+      <p class="text-lg md:text-2xl italic mb-6" style="color:rgba(255,255,255,.95);">${t().heroSub}</p>
+      <p class="text-md md:text-lg mb-8" style="color:rgba(255,255,255,.95);">${t().heroDesc}</p>
+      <div class="flex gap-4 justify-center flex-wrap">
+        <button class="btn" onclick="navigate('Events')">${t().cta1}</button>
+        <button class="btn border" style="background:#fff;color:var(--forest-green);" onclick="navigate('Visit')">${t().cta2}</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="max-w-6xl mx-auto py-16 px-4 text-center">
+    <h2 class="text-3xl md:text-4xl font-serif mb-2" style="color: var(--forest-green);">${t().welcome}</h2>
+    <p class="text-lg mb-2 italic" style="color: var(--olive);">${t().welcomeSub}</p>
+    <p class="text-lg max-w-2xl mx-auto mb-10">${t().welcomeP}</p>
+    <div class="grid md:grid-cols-3 gap-6">
+      ${spaces.map(s=>`
+        <div class="text-left cursor-pointer" onclick="navigate('Space:${s.key}')">
+          ${card(`
+            <img src="${s.hero}" alt="${s.title}" class="h-48 w-full object-cover" loading="lazy" referrerpolicy="no-referrer"/>
+            <div class="p-6 bg-white">
+              <h3 class="text-xl font-semibold mb-2" style="color:${s.color};">${s.title}</h3>
+              <p class="text-sm text-gray-700">${lang === 'EN' ? s.cardDescEN : s.cardDescJP}</p>
+            </div>
+          `)}
+        </div>
+      `).join("")}
+    </div>
+  </section>
+
+  ${StatsSection()}
+
+  <section class="py-16 text-center" style="background: rgba(232,220,196,0.4);">
+    <h3 class="text-2xl font-serif mb-6">${t().howItWorks}</h3>
+    <div class="flex justify-center items-center gap-6 flex-wrap">
+      ${[t().visit,t().experience,t().share,t().grow].map((label,i)=>`
+        <div class="flex items-center gap-3">
+          <div class="w-16 h-16 rounded-full text-white grid place-items-center text-2xl icon-pulse"
+               style="background:linear-gradient(135deg,var(--sage-green),var(--olive));">
+               ${i===0?"👋":i===1?"✨":i===2?"💫":"🍀"}
+          </div>
+          <div class="text-lg font-semibold" style="color:var(--forest-green);">${label}</div>
+          ${i<3?`<div class="text-2xl" style="color:var(--sage-green);">→</div>`:""}
+        </div>
+      `).join("")}
+    </div>
+  </section>
+
+  ${SeasonalCalendar()}
+
+  <section class="max-w-6xl mx-auto py-16 px-4 text-left">
+    <h3 class="text-3xl font-serif mb-2">${t().happening}</h3>
+    <div class="grid md:grid-cols-3 gap-6 mt-6">
+      ${upcomingEvents(3).map((e)=>{
+        const idx = eventList.indexOf(e);
+        return `
+          <div class="text-left cursor-pointer" onclick="navigate('Event:${idx}')">
+            ${card(`
+              <img src="${e.img}" alt="event" class="h-40 w-full object-cover" loading="lazy" referrerpolicy="no-referrer"/>
+              <div class="p-5">
+                <div class="text-xs font-semibold mb-1" style="color:var(--sage-green);">${e.cat}</div>
+                <h4 class="text-lg font-semibold">${lang==='EN'?e.titleEN:e.titleJP}</h4>
+                <p class="text-sm text-gray-600 mt-1">${t().by}: ${lang==='EN'?e.hostEN:e.hostJP} · ${e.time}</p>
+                <p class="text-xs font-semibold mt-2" style="color:var(--terracotta);">${countdownLabel(e.date.full)}</p>
+              </div>
+            `)}
+          </div>`;
+      }).join("")}
+    </div>
+  </section>
+
+  ${TestimonialCarousel()}
+</section>`;
+}
+
+const recipes = [
+    {
+      key: 0,
+      icon:"🍄",
+      titleEN:"Garden Vegetable & Wild Mushroom Soup with Yuzu Peel",
+      titleJP:"庭野菜と山きのこ、柚子皮のスープ",
+      byEN:"Tomiko", byJP:"トミ子",
+      introEN:"Slow-sautéed mushrooms release deep aroma; yuzu peel brightens a gentle miso broth.",
+      introJP:"きのこをゆっくり炒めて旨みを引き出し、柚子皮で澄んだ香りを重ねるやさしい味噌仕立て。",
+      ingredientsEN:["Carrot, daikon, komatsuna (bite-size)","Handpicked wild mushrooms, sliced","Light kombu-dashi, white miso","Ginger (matchsticks), garlic (thinly sliced), yuzu peel (very thinly sliced)"],
+      ingredientsJP:["にんじん・大根・小松菜（食べやすく）","山きのこ（薄切り）","生姜せん切り・にんにく薄切り","昆布だし・白味噌","柚子皮（極薄）"],
+      stepsEN:["Sauté mushrooms gently in a film of oil until fragrant.","Add dashi, carrots, daikon; simmer until just tender.","Remove from heat; dissolve white miso.","Add komatsuna to wilt; finish with yuzu peel."],
+      stepsJP:["少量の油で弱火できのこを香りが立つまで炒める。","だし・にんじん・大根を加え、やわらかくなるまで煮る。","火を止めて白味噌を溶く。","小松菜を加えて余熱でしんなり、柚子皮で仕上げ。"],
+      finishEN:"Clear, lightly cloudy broth with tender vegetables; citrus aroma rising at the rim.",
+      finishJP:"澄んだ淡いスープにやわらかな野菜、湯気からふっと柚子が香る。",
+      notesEN:"If mushrooms are watery, sauté longer to concentrate. Do not boil after adding miso.",
+      notesJP:"きのこが水っぽい場合は長めに炒めて濃縮。味噌投入後は沸騰させない。"
+    },
+    {
+      key: 1,
+      icon:"🥗",
+      titleEN:"Field Herb Harvest Salad with Pickled Flower Vinegar",
+      titleJP:"野のハーブと花酢の収穫サラダ",
+      byEN:"Leila", byJP:"レイラ",
+      introEN:"Hand-torn greens dressed with a floral, gently acidic vinaigrette.",
+      introJP:"手でちぎった葉に、花の香りを含ませた軽やかな酸味のヴィネグレット。",
+      ingredientsEN:["Mixed garden greens (hand-torn)","Shiso, mint, edible wild leaves","Pickled flower vinegar (sakura or sansho)","Cold-pressed olive oil","Toasted seeds (sunflower or buckwheat)"],
+      ingredientsJP:["庭のミックスグリーン（手でちぎる）","しそ・ミント・食べられる野草","花酢（桜酢・花山椒酢など）","低温圧搾オリーブオイル","炒り種（ひまわり・そばの実など）"],
+      stepsEN:["Whisk flower vinegar with salt.","Stream in olive oil to lightly emulsify.","Toss greens and herbs; scatter seeds."],
+      stepsJP:["花酢に塩を溶かす。","オリーブオイルを糸のように加え軽く乳化。","葉とハーブを和え、種を散らす。"],
+      finishEN:"Glossed leaves with scattered seeds; herb perfume first, blossom second.",
+      finishJP:"艶のある葉に種の食感。ハーブが先に香り、遅れて花の風味。",
+      notesEN:"Add lemon zest if flower vinegar is mild.",
+      notesJP:"花酢が穏やかな時はレモン皮を少量。"
+    },
+    {
+      key: 2,
+      icon:"🥒",
+      titleEN:"Nukazuke with Citrus Peel & Toasted Kombu",
+      titleJP:"柚子皮と炙り昆布のぬか漬け",
+      byEN:"Hyejin", byJP:"ヘジン",
+      introEN:"Citrus and kombu perfume the nuka bed for layered umami.",
+      introJP:"柑橘と昆布をぬか床に忍ばせ、香りと旨みを層でつくる。",
+      ingredientsEN:["Seasonal vegetables (cucumber, turnip, radish)","Mature nuka bed","Roasted kombu strips","Yuzu/orange peel"],
+      ingredientsJP:["季節の野菜（きゅうり・かぶ・大根）","熟成したぬか床","炙った昆布の細切り","柚子／みかんの皮"],
+      stepsEN:["Mix kombu & citrus into nuka.","Bury vegetables; turn daily.","Adjust salt if brine tastes dull."],
+      stepsJP:["昆布と柑橘皮をぬか床に混ぜ込む。","野菜を埋め、毎日かき混ぜる。","味がぼやけたら塩を少量足す。"],
+      finishEN:"Crisp pickles with citrus echo and ocean depth.",
+      finishJP:"歯応えシャキッ、柑橘の余韻に海の旨み。",
+      notesEN:"Replace peels weekly to keep aroma bright.",
+      notesJP:"皮は週1目安で入れ替え。"
+    },
+    {
+      key: 3,
+      icon:"🍞",
+      titleEN:"Sourdough with Roasted Rice Bran",
+      titleJP:"焙煎ぬかサワードウ",
+      byEN:"Evan", byJP:"エヴァン",
+      introEN:"Toasted nuka adds warm nuttiness to an airy crumb.",
+      introJP:"焙煎ぬかの香ばしさが軽やかな生地にコクを与える。",
+      ingredientsEN:["Active sourdough starter","Bread flour (+ whole grain)","Roasted rice bran (1–2 tbsp)","Sea salt, water"],
+      ingredientsJP:["元気なサワードウ種","強力粉（全粒粉ブレンド可）","焙煎米ぬか（1〜2 tbsp）","塩・水"],
+      stepsEN:["Autolyse 30–60 min.","Add starter & salt; fold in bran.","Slow bulk; shape; proof.","Score & steam-bake; cool, then slice."],
+      stepsJP:["オートリーズ30〜60分。","種・塩・ぬかを合わせる。","低温長時間発酵→成形→ホイロ。","クープ→蒸気焼成→冷ましてカット。"],
+      finishEN:"Thin crackling crust, gentle tang, toasty after-aroma.",
+      finishJP:"薄くパリッ、穏やかな酸味、香ばしい余香。",
+      notesEN:"Nuka drinks water—add 2–3% hydration if tight.",
+      notesJP:"生地が硬ければ加水を2〜3%増やす。"
+    },
+    {
+      key: 4,
+      icon:"🍪",
+      titleEN:"Soft Almond–Kinako Cookies",
+      titleJP:"きな粉とアーモンドのソフトクッキー",
+      byEN:"Noura", byJP:"ヌーラ",
+      introEN:"Tender cookies with roasted-soy warmth; great with tea.",
+      introJP:"きな粉の香ばしさとしっとり食感。お茶に合う素朴な贅沢。",
+      ingredientsEN:["Almond flour, kinako","Butter or coconut oil","Honey or maple","Pinch of salt"],
+      ingredientsJP:["アーモンド粉・きな粉","バター or ココナッツオイル","はちみつ or メープル","塩ひとつまみ"],
+      stepsEN:["Cream fat & sweetener; fold dry mix.","Chill; scoop mounds.","Bake low (160°C) to keep soft."],
+      stepsJP:["油脂と甘味料を混ぜ、粉類を合わせる。","冷やして成形。","160°Cでしっとり焼成。"],
+      finishEN:"Pale gold, soft centers; kinako blooms when warm.",
+      finishJP:"淡いきつね色、中心しっとり。温かいと香り最高潮。",
+      notesEN:"Add sesame for subtle snap.",
+      notesJP:"白ごまで食感アップ。"
+    },
+    {
+      key: 5,
+      icon:"🥯",
+      titleEN:"Bagel Sandwich with Herb Tofu Cream",
+      titleJP:"ハーブ豆腐クリームのベーグルサンド",
+      byEN:"Diego M", byJP:"ディエゴ",
+      introEN:"Silky tofu spread with basil & dill; layered with pickles.",
+      introJP:"バジルとディル香る豆腐スプレッド。浅漬けの酸味で奥行き。",
+      ingredientsEN:["Fresh bagels","Silken tofu, olive oil, salt","Basil, dill","Pickled radish/cucumber","Leafy greens"],
+      ingredientsJP:["焼き立てベーグル","絹豆腐・オリーブ油・塩","バジル・ディル","浅漬け（大根・きゅうり）","リーフ野菜"],
+      stepsEN:["Blend tofu + oil + salt until silky.","Fold herbs.","Spread thick; add pickles & greens."],
+      stepsJP:["豆腐・油・塩を撹拌。","ハーブを混ぜる。","厚めに塗って具を重ねる。"],
+      finishEN:"Creamy, herby bite with bagel chew.",
+      finishJP:"クリーミーでハーブ香る一口、ベーグルの弾力。",
+      notesEN:"Roasted nuts add crunch.",
+      notesJP:"ローストナッツで食感アップ。"
+    },
+    {
+      key: 6,
+      icon:"🍜",
+      titleEN:"Rice Noodles in Clear Broth with Garden Herb Oil",
+      titleJP:"澄んだスープの米麺と庭のハーブオイル",
+      byEN:"Lan", byJP:"ラン",
+      introEN:"Light broth finished with a spoon of shiso–basil oil.",
+      introJP:"透き通るスープにしそ・バジルの香味油を一さじ。",
+      ingredientsEN:["Rice noodles","Light chicken/vegetable broth","Herb oil (basil/shiso/parsley + salt)","Scallion, white pepper"],
+      ingredientsJP:["米麺","軽い鶏or野菜スープ","ハーブオイル（バジル・しそ・パセリ＋塩）","ねぎ・白胡椒"],
+      stepsEN:["Blend herb oil (no heat).","Cook noodles; pour hot broth.","Finish with herb oil & scallion."],
+      stepsJP:["ハーブオイルを作る（非加熱）。","麺を茹でて熱いスープを注ぐ。","オイルとねぎで仕上げ。"],
+      finishEN:"Clear bowl with emerald swirls; feather-light yet aromatic.",
+      finishJP:"澄んだ椀に緑のオイルが漂う。軽くて香り豊か。",
+      notesEN:"Few drops of fish sauce deepen finish.",
+      notesJP:"ナンプラー数滴で余韻が深まる。"
+    },
+    {
+      key: 7,
+      icon:"🍖",
+      titleEN:"Wild Venison over Rice with Black Garlic",
+      titleJP:"鹿肉の黒にんにくご飯",
+      byEN:"Tomo", byJP:"トモ",
+      introEN:"Quick-seared venison brushed with black garlic over warm rice & greens.",
+      introJP:"サッと焼いた鹿肉に黒にんにくを塗り、あつあつご飯と青菜にのせる。",
+      ingredientsEN:["Thin-sliced venison","Black garlic paste","Salt, oil","Warm rice","Sautéed greens"],
+      ingredientsJP:["鹿薄切り","黒にんにくペースト","塩・油","炊きたてご飯","青菜ソテー"],
+      stepsEN:["Sear venison briefly; season.","Brush with black garlic while warm.","Serve over rice and greens."],
+      stepsJP:["鹿肉を短時間で焼き、塩を当てる。","温かいうちに黒にんにくを塗る。","ご飯と青菜の上にのせる。"],
+      finishEN:"Juicy slices, sweet–savory perfume, comforting bowl.",
+      finishJP:"しっとりした肉と甘旨い香り。満たされる丼。",
+      notesEN:"Do not overcook—keep it blushing.",
+      notesJP:"火入れしすぎないのがコツ。"
+    }
+  ];
+
+    function CafePage(){ 
+
+ return `<section class="max-w-6xl mx-auto py-16 px-4 fade-enter"><h2 class="text-4xl font-serif mb-2" style="color:var(--forest-green);">${t().cafeTitle}</h2>
+<p class="text-lg mb-8 italic" style="color:var(--olive);">${t().cafeSub}</p><div class="philo-wrap my-10">
+  <div class="philo-row">
+    <!-- Row 1 -->
+    <div class="philo-track">
+      ${PHILO_TOP.map(src => `<img src="${src}" class="philo-img" loading="lazy" referrerpolicy="no-referrer"/>`).join("")}
+      ${PHILO_TOP.map(src => `<img src="${src}" class="philo-img" loading="lazy" referrerpolicy="no-referrer"/>`).join("")}
+    </div>
+
+    <div class="philo-track rev">
+      ${PHILO_BOTTOM.map(src => `<img src="${src}" class="philo-img" loading="lazy" referrerpolicy="no-referrer"/>`).join("")}
+      ${PHILO_BOTTOM.map(src => `<img src="${src}" class="philo-img" loading="lazy" referrerpolicy="no-referrer"/>`).join("")}
+    </div>
+  </div>
+</div>
+<section class="rounded-xl p-6 md:p-8" style="background:transparent;">
+  <!-- Title stays aligned with other section headings (same left as container) -->
+  <h3 class="text-2xl font-serif mb-4 mt-6" style="color: var(--forest-green);">
+    ${t().philosophy}
+  </h3>
+<!-- Body: centered block with right-side blooming flower -->
+<div class="max-w-6xl mx-auto">
+  <div class="grid md:grid-cols-[1fr_320px] gap-6 items-start">
+    <!-- Text -->
+    <div class="max-w-3xl mx-auto md:mx-0">
+      <div class="text-lg philo-lines text-left">
+        <!-- 既存の行ごとフェード処理はそのまま -->
+        ${t().philosophyText
+          .split("<br>")
+          .map(line => line.trim()===""
+            ? `<div class="philo-line" style="height:1rem;"></div>`
+            : `<div class="philo-line">${line}</div>`
+          ).join("")}
+      </div>
+    </div>
+
+    <!-- Animated Flower (md以上で表示) -->
+    <aside class="block md:block">
+      <svg viewBox="0 0 200 240" class="bloom-svg" aria-hidden="true">
+        <!-- background wash -->
+        <ellipse cx="110" cy="130" rx="86" ry="64" fill="rgba(139,157,131,.12)"/>
+
+        <!-- stem -->
+        <path class="bloom-stem"
+          d="M100 200 C 100 180, 98 160, 100 140 C 104 126, 108 120, 100 110"
+          stroke="#6B7C59" stroke-width="6" fill="none" stroke-linecap="round"/>
+
+        <!-- leaves -->
+        <path d="M98 165 C 72 156, 64 148, 58 130 C 76 138, 84 146, 98 165 Z"
+              fill="#8B9D83" opacity=".92"/>
+        <path d="M102 155 C 128 148, 138 140, 146 122 C 128 130, 118 140, 102 155 Z"
+              fill="#8B9D83" opacity=".88"/>
+
+        <!-- petals (6) -->
+        <defs>
+          <!-- soft pastel pink core -->
+          <radialGradient id="petalCute" cx="50%" cy="40%" r="75%">
+            <stop offset="0%"  stop-color="#F1E9FF"/>   <!-- milky pink -->
+            <stop offset="55%" stop-color="#F9C8D9"/>
+            <stop offset="100%" stop-color="#F4B6CB"/>
+          </radialGradient>
+
+          <!-- subtle edge highlight (adds a glossy rim) -->
+          <linearGradient id="petalRim" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%"   stop-color="white" stop-opacity="0.8"/>
+            <stop offset="40%"  stop-color="white" stop-opacity="0"/>
+            <stop offset="100%" stop-color="white" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+
+        <!-- rounder / cuter petal shape:
+            - chubbier lobes on top
+            - soft point at bottom
+            - sized to avoid covering stem/leaves -->
+        <g>
+          <!-- main pink petals -->
+          <g fill="url(#petalCute)" stroke="#F8CAD7" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round" opacity="0.98">
+            <!-- base petal (rotated via CSS var --rot around 100,98) -->
+            <path class="bloom-petal" data-i="0" style="--rot:0deg"
+              d="M100 64
+                C 113 60, 126 68, 128 82
+                C 129 92, 122 104, 110 110
+                C 105 113, 100 118, 100 118
+                C 100 118, 95 113, 90 110
+                C 78 104, 71 92, 72 82
+                C 74 68, 87 60, 100 64 Z" />
+            <path class="bloom-petal" data-i="1" style="--rot:60deg"
+              d="M100 64 C 113 60, 126 68, 128 82 C 129 92, 122 104, 110 110 C 105 113, 100 118, 100 118 C 100 118, 95 113, 90 110 C 78 104, 71 92, 72 82 C 74 68, 87 60, 100 64 Z"/>
+            <path class="bloom-petal" data-i="2" style="--rot:120deg"
+              d="M100 64 C 113 60, 126 68, 128 82 C 129 92, 122 104, 110 110 C 105 113, 100 118, 100 118 C 100 118, 95 113, 90 110 C 78 104, 71 92, 72 82 C 74 68, 87 60, 100 64 Z"/>
+            <path class="bloom-petal" data-i="3" style="--rot:180deg"
+              d="M100 64 C 113 60, 126 68, 128 82 C 129 92, 122 104, 110 110 C 105 113, 100 118, 100 118 C 100 118, 95 113, 90 110 C 78 104, 71 92, 72 82 C 74 68, 87 60, 100 64 Z"/>
+            <path class="bloom-petal" data-i="4" style="--rot:240deg"
+              d="M100 64 C 113 60, 126 68, 128 82 C 129 92, 122 104, 110 110 C 105 113, 100 118, 100 118 C 100 118, 95 113, 90 110 C 78 104, 71 92, 72 82 C 74 68, 87 60, 100 64 Z"/>
+            <path class="bloom-petal" data-i="5" style="--rot:300deg"
+              d="M100 64 C 113 60, 126 68, 128 82 C 129 92, 122 104, 110 110 C 105 113, 100 118, 100 118 C 100 118, 95 113, 90 110 C 78 104, 71 92, 72 82 C 74 68, 87 60, 100 64 Z"/>
+          </g>
+
+          <!-- glossy rim overlay (very subtle, adds “cute” sheen) -->
+          <g fill="none" stroke="url(#petalRim)" stroke-width="1.2" opacity="0.7">
+            <path class="bloom-petal" data-i="0" style="--rot:0deg"
+              d="M100 64 C 113 60, 126 68, 128 82 C 129 92, 122 104, 110 110"/>
+            <path class="bloom-petal" data-i="1" style="--rot:60deg"
+              d="M100 64 C 113 60, 126 68, 128 82 C 129 92, 122 104, 110 110"/>
+            <path class="bloom-petal" data-i="2" style="--rot:120deg"
+              d="M100 64 C 113 60, 126 68, 128 82 C 129 92, 122 104, 110 110"/>
+            <path class="bloom-petal" data-i="3" style="--rot:180deg"
+              d="M100 64 C 113 60, 126 68, 128 82 C 129 92, 122 104, 110 110"/>
+            <path class="bloom-petal" data-i="4" style="--rot:240deg"
+              d="M100 64 C 113 60, 126 68, 128 82 C 129 92, 122 104, 110 110"/>
+            <path class="bloom-petal" data-i="5" style="--rot:300deg"
+              d="M100 64 C 113 60, 126 68, 128 82 C 129 92, 122 104, 110 110"/>
+          </g>
+        </g>
+
+        <!-- flower center (brighter & cuter) -->
+        <circle class="bloom-center" cx="100" cy="90" r="11" fill="#FFD87A"/>
+        <circle cx="100" cy="88.8" r="5.2" fill="#FFF4CF" opacity="0.95"/>
+
+        <!-- sparkles -->
+        <g opacity=".9" fill="#FACC15">
+          <circle class="bloom-sparkle" cx="60" cy="60" r="2" style="animation-delay:1.2s"/>
+          <circle class="bloom-sparkle" cx="145" cy="55" r="2" style="animation-delay:1.35s"/>
+          <circle class="bloom-sparkle" cx="160" cy="110" r="2" style="animation-delay:1.5s"/>
+          <circle class="bloom-sparkle" cx="46" cy="110" r="2" style="animation-delay:1.65s"/>
+        </g>
+      </svg>
+    </aside>
+  </div>
+</div>
+
+</section>
+<section class="grid md:grid-cols-2 gap-6 mt-8"><div class="bg-white rounded-xl shadow p-6 border border-[var(--warm-beige)]/60 card-hover"><div class="text-xs font-semibold inline-block px-2 py-1 rounded-full mb-3" style="background:var(--sage-green);color:#fff;">${lang==='EN'?'Today in the Kitchen':'本日のキッチン'}</div><h4 class="text-xl font-semibold mb-2" style="color:var(--forest-green);">${lang==='EN'? 'What we’re cooking':'今日つくっているもの'}</h4><ul class="text-sm leading-relaxed text-[var(--charcoal)] list-disc ml-5 space-y-1"><li>${lang==='EN'?'Pumpkin & miso soup from the garden':'庭のかぼちゃと味噌のお味噌汁'}</li><li>${lang==='EN'?'Herb salad with edible flowers':'食べられる花とハーブのサラダ'}</li><li>${lang==='EN'?'Fermented pickles for winter':'冬に向けた発酵ピクルス'}</li></ul><div class="mt-4 text-sm text-[var(--olive)] italic">${lang==='EN'?'Menu changes daily based on harvest and donations.':'メニューは収穫状況・持ち寄りにより毎日変わります。'}</div></div><div class="bg-white rounded-xl shadow p-6 border border-[var(--warm-beige)]/60 card-hover"><h4 class="text-xl font-semibold mb-3 flex items-center gap-2" style="color:var(--forest-green);"><span>⚠️</span><span>${lang==='EN'?'Allergies & dietary notes':'アレルギー・食事のご希望'}</span></h4><p class="text-sm leading-relaxed text-[var(--charcoal)] mb-3">${lang==='EN'?'Please tell us if you have allergies or foods you avoid. We will adapt your role (cutting, mixing, tasting, etc.) so you stay safe and still take part.':'アレルギーや食べられないものがあれば教えてください。安全に参加できるように、担当作業（切る・混ぜる・味付けなど）を調整します。'}</p><div class="rounded-lg p-3 text-xs" style="background:var(--warm-beige);color:var(--charcoal);">${lang==='EN'?'We handle shared tools / shared surfaces. Cross-contact is possible.':'道具・作業台は基本的に共有です。完全な分離が難しい場合があります。'}</div></div></section><section class="grid md:grid-cols-2 gap-6 mt-8"><div class="bg-white rounded-xl shadow p-6 border border-[var(--warm-beige)]/60 card-hover"><h4 class="text-xl font-semibold mb-2 flex items-center gap-2" style="color:var(--forest-green);"><span>👐</span><span>${lang==='EN'?'How you join the kitchen':'キッチンへの参加のしかた'}</span></h4><ul class="text-sm leading-relaxed text-[var(--charcoal)] list-disc ml-5 space-y-1"><li>${lang==='EN'?'Small roles for everyone: washing herbs, chopping, plating, welcoming guests.':'誰でもできる小さな役割：野菜を洗う・刻む・盛りつけ・お客さんを迎えるなど'}</li><li>${lang==='EN'?'Children welcome. We give them real jobs (mixing, decorating, carrying bowls).':'子どもも歓迎。本物の仕事（混ぜる・飾る・お皿を運ぶなど）があります。'}</li><li>${lang==='EN'?'You don’t have to be “good at cooking.” Curiosity is enough.':'「料理が上手」である必要はありません。好奇心があればOK。'}</li></ul></div><div class="bg-white rounded-xl shadow p-6 border border-[color:var(--warm-beige)]/60 card-hover"><h4 class="text-xl font-semibold mb-2 flex items-center gap-2" style="color:var(--forest-green);"><span>💗</span><span>${lang==='EN'?'How cost works here':'経費の考え方'}</span></h4><p class="text-sm leading-relaxed text-[var(--charcoal)] mb-2">${lang==='EN'?'This kitchen is not a normal restaurant. Ingredients come from the garden, local farms, and what people bring.':'ここはレストランではありません。食材は畑・近所の農家さん・みんなの持ち寄りから来ます。'}</p><p class="text-sm leading-relaxed text-[var(--charcoal)]">${lang==='EN'?'We invite a small contribution (food donation, ingredients, cash support) so we can keep cooking and welcoming new people.':'運営のために、材料の持ち寄りや少額のサポート費をお願いしています。続けていくための仕組みです。'}</p></div></section><h3 class="text-2xl font-serif mb-4 mt-12" style="color: var(--forest-green);">
+  ${t().recipes}
+</h3>
+<div class="grid md:grid-cols-3 gap-6">${recipes.map(r=>`<div class="recipe-card relative overflow-hidden rounded-xl bg-white shadow-lg group cursor-pointer h-80"><div class="recipe-front absolute inset-0 p-6 flex flex-col items-center justify-center transition-transform duration-500 group-hover:-translate-y-full bg-white"><div class="text-6xl mb-4">${r.icon}</div><h4 class="text-lg font-semibold text-center">${lang==='EN'?r.titleEN:r.titleJP}</h4><p class="text-sm italic mt-2" style="color: var(--olive);">${lang==='EN'?`Recipe by ${r.byEN}`:`${r.byJP}のレシピ`}</p></div><div class="recipe-back absolute inset-0 p-6 text-white transition-transform duration-500 translate-y-full group-hover:translate-y-0 overflow-y-auto" style="background: linear-gradient(135deg, var(--sage-green), var(--forest-green));"><h4 class="text-xl font-bold mb-3">${lang==='EN'?r.titleEN:r.titleJP}</h4><div class="space-y-2 text-sm"><p><strong>${t().ingredients}:</strong></p><ul class="list-disc ml-5 space-y-1">${(lang==='EN'?r.ingredientsEN:r.ingredientsJP).map(i=>`<li>${i}</li>`).join('')}</ul><button class="mt-4 btn w-full" style="background: var(--terracotta); color:#fff;" onclick="navigate('Recipe:${r.key}')">${t().viewRecipe}</button></div></div></div>`).join('')}</div><div class="text-center mt-8"><button class="btn">${t().shareRecipe}</button></div></section>`; }
+
+      // 行フェードを「見えたら開始」に
+      function initPhiloReveal({ force = false } = {}) {
+        const container = document.querySelector('.philo-lines');
+        if (!container) return;
+
+        const lines = Array.from(container.querySelectorAll('.philo-line'));
+        if (!lines.length) return;
+
+        // reset each time
+        lines.forEach(l => l.classList.remove('show'));
+
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        const reveal = () => {
+          if (reduceMotion) { lines.forEach(l => l.classList.add('show')); return; }
+          let i = 0;
+          const step = () => {
+            if (i < lines.length) {
+              lines[i++].classList.add('show');
+              setTimeout(step, 220);
+            }
+          };
+          step();
+        };
+
+        // NEW: always allow a forced start (e.g., right after routing to Café)
+        if (force) { requestAnimationFrame(reveal); return; }
+
+        // existing logic (already-visible fast path)
+        const rect = container.getBoundingClientRect();
+        const vh = window.innerHeight || document.documentElement.clientHeight;
+        if (rect.top < vh * 0.9 && rect.bottom > 0) {
+          requestAnimationFrame(reveal);
+          return;
+        }
+
+        // IO fallback
+        if ('IntersectionObserver' in window) {
+          const io = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                reveal();
+                io.disconnect();
+              }
+            });
+          }, { rootMargin: '0px 0px -10% 0px', threshold: 0.01 }); // slightly less strict bottom margin
+          io.observe(container);
+        } else {
+          reveal();
+        }
+      }
+
+      function initBloomOnView() {
+        const svg = document.querySelector('.bloom-svg');
+        if (!svg) return;
+
+        const parts = svg.querySelectorAll('.bloom-stem, .bloom-petal, .bloom-center, .bloom-sparkle');
+
+        // ① いったん全て停止（毎回リセット）
+        parts.forEach(el => el.classList.add('anim-paused'));
+
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const play = () => parts.forEach(el => el.classList.remove('anim-paused'));
+
+        if (reduceMotion) return;
+
+        // ② すでに見えているなら即開始
+        const rect = svg.getBoundingClientRect();
+        const vh = window.innerHeight || document.documentElement.clientHeight;
+        if (rect.top < vh * 0.9 && rect.bottom > 0) {
+          requestAnimationFrame(play);
+          return;
+        }
+
+        // ③ IO で可視になったら開始
+        if ('IntersectionObserver' in window) {
+          const io = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                play();
+                io.disconnect();
+              }
+            });
+          }, { rootMargin: '0px 0px -20% 0px', threshold: 0.01 });
+          io.observe(svg);
+        } else {
+          play();
+        }
+      }
+    
+      function RecipePage(r){
+        const title = (lang==='EN'? r.titleEN : r.titleJP);
+        const by    = (lang==='EN'? r.byEN    : r.byJP);
+        const intro = (lang==='EN'? r.introEN : r.introJP);
+        const ings  = (lang==='EN'? r.ingredientsEN : r.ingredientsJP) || [];
+        const steps = (lang==='EN'? r.stepsEN       : r.stepsJP) || [];
+        const finish= (lang==='EN'? r.finishEN      : r.finishJP) || "";
+        const notes = (lang==='EN'? r.notesEN       : r.notesJP)  || "";
+
+        return `
+          ${backBar(t().backSpaces,"Cafe")}
+          <section class="max-w-3xl mx-auto px-4 fade-enter">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="text-4xl">${r.icon || "🍽️"}</div>
+              <h2 class="text-3xl md:text-4xl font-serif">${title}</h2>
+            </div>
+            <p class="text-sm text-gray-600 mb-4">
+              ${lang==='EN' ? 'Recipe by' : 'レシピ'}: <strong>${by}</strong>
+            </p>
+
+            ${intro ? `<p class="text-lg leading-relaxed mb-6">${intro}</p>` : ''}
+
+            <div class="bg-white rounded-xl shadow border p-5 mb-6" style="border-color:var(--warm-beige);">
+              <h3 class="text-xl font-semibold mb-2" style="color:var(--forest-green);">${t().ingredients}</h3>
+              <ul class="list-disc ml-5 space-y-1">
+                ${ings.map(i=>`<li>${i}</li>`).join('')}
+              </ul>
+            </div>
+
+            <div class="bg-white rounded-xl shadow border p-5 mb-6" style="border-color:var(--warm-beige);">
+              <h3 class="text-xl font-semibold mb-2" style="color:var(--forest-green);">${lang==='EN'?'Steps':'手順'}</h3>
+              <ol class="list-decimal ml-5 space-y-2">
+                ${steps.map(s=>`<li>${s}</li>`).join('')}
+              </ol>
+            </div>
+
+            ${finish ? `
+              <div class="bg-white rounded-xl shadow border p-5 mb-6" style="border-color:var(--warm-beige);">
+                <h3 class="text-lg font-semibold mb-2" style="color:var(--forest-green);">${lang==='EN'?'Finish':'仕上がり'}</h3>
+                <p>${finish}</p>
+              </div>` : ''}
+
+            ${notes ? `
+              <div class="rounded-xl p-4" style="background:var(--warm-beige);">
+                <h4 class="font-semibold mb-1">${lang==='EN'?'Notes':'メモ'}</h4>
+                <p>${notes}</p>
+              </div>` : ''}
+
+            <div class="mt-8">
+              <button class="btn" onclick="navigate('Cafe')">${lang==='EN'?'Back to Café':'カフェへ戻る'}</button>
+            </div>
+          </section>
+        `;
+      }
+
+    function isPast(isoStr){
+      return new Date(isoStr).getTime() < Date.now();
+    }
+
+    let eventsView = 'upcoming'; // 'upcoming' | 'past'
+
+    function EventsPage(){
+      const now = Date.now();
+      const filtered = eventList
+        .slice() // copy
+        .sort((a,b)=> new Date(a.date.full)-new Date(b.date.full))
+        .filter(e => eventsView==='upcoming' ? new Date(e.date.full)>=now : new Date(e.date.full)<now);
+
+      const counts = {
+        upcoming: eventList.filter(e=>!isPast(e.date.full)).length,
+        past:     eventList.filter(e=> isPast(e.date.full)).length
+      };
+
+      const segment = `
+        <div class="inline-flex rounded-lg border overflow-hidden mb-6" style="border-color:var(--warm-beige);">
+          <button onclick="eventsView='upcoming'; renderRoute();" class="px-4 py-2 ${eventsView==='upcoming'?'bg-white':'bg-[var(--cream)]'}">
+            ${lang==='EN'?'Upcoming':'これから'} <span class="text-xs opacity-70">(${counts.upcoming})</span>
+          </button>
+          <button onclick="eventsView='past'; renderRoute();" class="px-4 py-2 ${eventsView==='past'?'bg-white':'bg-[var(--cream)]'}">
+            ${lang==='EN'?'Past':'これまで'} <span class="text-xs opacity-70">(${counts.past})</span>
+          </button>
+        </div>`;
+
+      return `
+      <section class="max-w-6xl mx-auto py-16 px-4 fade-enter">
+        <h2 class="text-4xl font-serif mb-2" style="color:var(--forest-green);">${t().eventsCal}</h2>
+        <p class="text-lg mb-4 italic" style="color: var(--olive);">${t().eventsSub}</p>
+        ${segment}
+        <div class="grid md:grid-cols-3 gap-6">
+          ${filtered.map((e,i)=>{
+            const when = new Date(e.date.full);
+            const badge = e.kind==='recurring'
+              ? (lang==='EN'? e.recurEN : e.recurJP)
+              : when.toLocaleDateString(lang==='EN'?'en-US':'ja-JP', { month:'short', day:'numeric', weekday:'short' });
+
+            return card(`
+              <div class="p-0">
+                <img src="${e.img}" alt="event" class="h-44 w-full object-cover" loading="lazy" referrerpolicy="no-referrer"/>
+                <div class="p-5">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="text-xs px-2 py-1 rounded-full" style="background:${e.kind==='recurring'?'#E8DCC4':'#8B9D83'}; color:${e.kind==='recurring'?'#2C2A28':'#fff'};">${e.kind==='recurring' ? (lang==='EN'?'Recurring':'定期') : (lang==='EN'?'Special':'特別')}</span>
+                    <span class="text-xs px-2 py-1 rounded-full border" style="border-color:var(--warm-beige);">${e.cat}</span>
+                    <span class="text-xs opacity-70">${badge}</span>
+                  </div>
+                  <h3 class="text-lg font-semibold">${lang==='EN'?e.titleEN:e.titleJP}</h3>
+                  <p class="text-sm text-gray-600 mt-1">${t().by}: ${lang==='EN'?e.hostEN:e.hostJP} · ${e.time}</p>
+                  <div class="mt-3"><button class="btn" onclick="navigate('Event:${eventList.indexOf(e)}')">${eventsView==='upcoming'?t().join:(lang==='EN'?'View':'詳細')}</button></div>
+                </div>
+              </div>
+            `);
+          }).join('')}
+        </div>
+      </section>`;
+    }
+
+    function SpacesPage(){ return `<section class="max-w-6xl mx-auto py-16 px-4 text-center fade-enter"><h2 class="text-4xl font-serif mb-2" style="color:var(--forest-green);">${t().spacesTitle}</h2><p class="text-lg mb-10 italic" style="color:var(--olive);">${t().spacesSub}</p><div class="grid md:grid-cols-3 gap-6">${spaces.map(s=>`<div class="text-left cursor-pointer" onclick="navigate('Space:${s.key}')">${card(`<img src="${s.hero}" alt="${s.title}" class="h-48 w-full object-cover"/><div class="p-6 bg-white"><h3 class="text-xl font-semibold mb-2" style="color:${s.color};">${s.title}</h3><p class="text-sm text-gray-700">${lang === 'EN' ? s.cardDescEN : s.cardDescJP}</p></div>`)}</div>`).join('')}</div></section>`; }
+
+    function ValuesPage(){
+      const values = [
+        {
+          k:"Curiosity", jp:"好奇心", icon:"🔍",
+          img: imgUrl("images/Curiosity.jpg", 1400, 85),
+          en:"We start with questions. Observe closely, ask why/how, run tiny experiments, and share what we notice.",
+          jpText:"まず問いから。よく観察し、「なぜ・どうして」といった問いを重ね、実験や仮説検証で確かめ、気づきを共有します。",
+          chips:["observe","ask","experiment"]
+        },
+        {
+          k:"Creation", jp:"創造力", icon:"🛠️",
+          img: imgUrl("images/Creation.jpg", 1400, 85),
+          en:"Ideas become prototypes. We make low-fi first, reuse materials, iterate together, and learn by doing.",
+          jpText:"アイデアはまず試作品に。手元の素材を活かし、みんなで改善しながら、やって学びます。",
+          chips:["prototype","reuse","iterate"]
+        },
+        {
+          k:"Care", jp:"思いやり", icon:"🫶",
+          img: imgUrl("images/Care.jpg", 1400, 85),
+          en:"Care for people, place, and materials. Practice consent, accessibility, safe food notes, repair, and low-waste habits.",
+          jpText:"人・場所・素材を大切に。納得感と利便性の追求、食の配慮、手入れ・修繕、ロスを減らす実践など。",
+          chips:["consent","access","low-waste"]
+        },
+        {
+          k:"Collaboration", jp:"協働", icon:"🙌",
+          img: imgUrl("images/Collaboration.jpg", 1400, 85),
+          en:"We co-create. Roles rotate, credit is shared, decisions are transparent, and everyone can teach & learn.",
+          jpText:"みんなでつくる。役割を回し、功績を分かち、決め方を見える化。誰でも教えることも、学ぶこともできます。",
+          chips:["rotate","share credit","open decisions"]
+        },
+      ];
+
+      const label = (v) => (lang==='EN'?v.k:v.jp);
+      const body  = (v) => (lang==='EN'?v.en:v.jpText);
+
+      return `
+        <section class="max-w-6xl mx-auto py-16 px-4 text-center fade-enter">
+          <h2 class="text-4xl font-serif mb-2" style="color:var(--forest-green);">${t().valuesTitle}</h2>
+          <p class="text-lg mb-6 italic" style="color:var(--olive);">${t().valuesSub}</p>
+
+          <figure class="max-w-4xl mx-auto mb-10">
+            <img src="images/CuriositasBright.png" alt="Curiositas visual" class="w-full max-w-2xl mx-auto object-contain"
+                style="filter: drop-shadow(0 8px 24px rgba(0,0,0,.12));" loading="lazy" referrerpolicy="no-referrer"/>
+          </figure>
+
+          <div class="max-w-3xl mx-auto text-left space-y-5">
+            ${values.map(v => `
+              <div class="group bg-white rounded-xl border card-hover overflow-hidden"
+                  style="border-color: var(--warm-beige);">
+
+                <!-- photo header -->
+                <div class="value-hero">
+                  <img src="${v.img}" alt="${label(v)} photo" loading="lazy" />
+                </div>
+
+                <!-- text -->
+                <div class="p-4 md:p-5 flex items-start gap-4">
+                  <div class="text-xl" aria-hidden="true">${v.icon}</div>
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                      <h3 class="text-xl font-semibold"
+                          style="color: var(--c-${v.k.toLowerCase()});">
+                        ${label(v)}
+                      </h3>
+                      <span class="ml-auto hidden md:inline-flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                        ${v.chips.map(c=>`<span class="cal-chip">${c}</span>`).join('')}
+                      </span>
+                    </div>
+                    <p class="mt-1 text-[0.98rem] leading-relaxed text-gray-700">${body(v)}</p>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </section>`;
+    }
+
+    function StoriesPage(){
+      return `
+      <section class="max-w-6xl mx-auto py-16 px-4 fade-enter">
+        <h2 class="text-4xl font-serif mb-2" style="color:var(--forest-green);">${t().storiesTitle}</h2>
+        <p class="text-lg mb-8 italic" style="color:var(--olive);">${t().storiesSub}</p>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          ${stories.map(s => card(`
+            <div class="p-0">
+              <img src="${s.img}" alt="story" class="h-56 w-full object-cover"/>
+              <div class="p-5">
+                <h3 class="text-xl font-semibold">${lang==='EN' ? s.titleEN : s.titleJP}</h3>
+                <p class="text-sm text-gray-600 mb-2">
+                  ${lang==='EN' ? "By" : "執筆"}: ${s.by} · ${s.minutes} ${t().minRead}
+                </p>
+
+                <div class="text-sm text-gray-700 mb-3 leading-relaxed">
+                  ${
+                    lang==='EN'
+                      ? firstParagraph(s.bodyEN)
+                      : firstParagraph(s.bodyJP)
+                  }
+                </div>
+
+                <button class="btn" onclick="navigate('Story:${s.key}')">
+                  ${t().readMore}
+                </button>
+              </div>
+            </div>
+          `)).join('')}
+        </div>
+      </section>`;
+    }
+
+    // —— Stories helpers ——
+    function firstParagraph(text){
+      if(!text) return "";
+      // 段落の区切り（空行 or <br><br>）で最初のパラグラフを返す
+      const p = text.split(/\r?\n\s*\r?\n|<br\s*\/?>\s*<br\s*\/?>/i)[0];
+      return p.trim();
+    }
+    function formatBody(text){
+      if(!text) return "";
+      // 段落を <p>…</p> に、行内改行は <br> に
+      let html = text
+        .split(/\r?\n\s*\r?\n/)
+        .map(p => `<p>${p.replace(/\r?\n/g, '<br>')}</p>`)
+        .join('');
+      return html;
+    }
+
+    function GalleryPage() {
+      const galleryItems = [
+        {
+          img: imgUrl("images/CafeFun.jpg", 800, 85),
+          captionEN: "Board games & small talk",
+          captionJP: "みんなで愉快にボードゲーム・世間話"
+        },
+        {
+          img: imgUrl("images/Veggies.jpg", 800, 85),
+          captionEN: "Rich harvest",
+          captionJP: "収穫の喜び"
+        },
+        {
+          img: imgUrl("images/PlantArt.jpg", 800, 85),
+          captionEN: "Fresh leaf art",
+          captionJP: "拾いたての葉でアート"
+        },
+        {
+          img: imgUrl("images/HammockTree.jpg", 800, 85),
+          captionEN: "Relaxing reads",
+          captionJP: "安らぎの読書"
+        },
+        {
+          img: imgUrl("images/Cookies.jpg", 800, 85),
+          captionEN: "Pretty herb cookies",
+          captionJP: "かわいいハーブクッキー"
+        },
+        {
+          img: imgUrl("images/FreezeDried.jpg", 800, 85),
+          captionEN: "Fruits to preserve",
+          captionJP: "保存用に加工したフルーツ"
+        }
+      ];
+
+      return `
+        <section class="max-w-6xl mx-auto py-16 px-4 fade-enter">
+          <h2 class="text-4xl font-serif mb-2" style="color:var(--forest-green);">
+            ${t().galleryTitle}
+          </h2>
+          <p class="text-lg mb-8 italic" style="color:var(--olive);">
+            ${t().gallerySub}
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            ${galleryItems.map(item => `
+              <div class="relative aspect-square overflow-hidden rounded-xl group cursor-pointer card-hover">
+                <img 
+                  src="${item.img}" 
+                  alt="${lang === 'EN' ? item.captionEN : item.captionJP}"
+                  class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                  loading="lazy"
+                />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div class="absolute bottom-0 left-0 right-0 bg-[var(--forest-green)]/90 text-white text-sm p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                  ${lang === 'EN' ? item.captionEN : item.captionJP}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+      `;
+    }
+
+    function ProgramsPage(){ const progs=[{icon:"🍳",en:"Cooking & Fermentation",jp:"料理と発酵"},{icon:"🌱",en:"Gardening & Composting",jp:"園芸と堆肥化"},{icon:"🎨",en:"Traditional Crafts",jp:"伝統工芸"},{icon:"💻",en:"Digital Skills",jp:"デジタルスキル"},{icon:"🌐",en:"Language Exchange",jp:"言語交換"},{icon:"📖",en:"Storytelling",jp:"ストーリーテリング"},]; return `<section class="max-w-6xl mx-auto py-16 px-4 fade-enter"><h2 class="text-4xl font-serif mb-2" style="color:var(--forest-green);">${t().programsTitle}</h2><p class="text-lg mb-8 italic" style="color:var(--olive);">${t().programsSub}</p><div class="grid md:grid-cols-3 gap-6">${progs.map(p=>card(`<div class=\"p-6 text-center bg-white\"><div class=\"text-5xl mb-2\">${p.icon}</div><h3 class=\"text-lg font-semibold\">${lang==='EN'?p.en:p.jp}</h3></div>`)).join('')}</div><div class="mt-10 text-center p-6 rounded-xl" style="background:var(--warm-beige);"><h3 class="text-xl font-semibold mb-1">${lang==='EN'?"Share Your Knowledge":"知識を共有しましょう"}</h3><p class="mb-3">${lang==='EN'?"We believe everyone has something valuable to teach.":"誰もが、他の誰かにとって学びとなる経験や視点を持っています。"}</p><button class="btn">${t().propose}</button></div></section>`; }
+
+    function GardenPage(){ return `<section class="max-w-6xl mx-auto py-16 px-4 fade-enter"><h2 class="text-4xl font-serif mb-2" style="color:var(--forest-green);">${t().gardenTitle}</h2><p class="text-lg mb-8 italic" style="color:var(--olive);">${t().gardenSub}</p>${GardenMapSection()}<div class="grid md:grid-cols-3 gap-6 mt-6">${card(`<div class=\"p-6\"><h3 class=\"text-xl font-semibold mb-2\">${t().growing}</h3><ul class=\"space-y-1\"><li>🫛 Seasonal vegetables</li><li>🪴 Culinary herbs</li><li>🍅 Tomatoes & peppers</li><li>🥗 Leafy greens</li><li>🫐 Berries and fruits</li><li>🪻 Dye plants</li></ul></div>`)}${card(`<div class=\"p-6\"><h3 class=\"text-xl font-semibold mb-2\">${t().involved}</h3><ul class=\"space-y-1\"><li>👪 Weekly gardening days</li><li>♻️ Recycling workshops</li><li>🌱 Seed-saving classes</li><li>🌾 Harvest celebrations</li><li>👨‍🌾 Learn from experienced growers</li></ul></div>`)}${card(`<div class=\"p-6\"><h3 class=\"text-xl font-semibold mb-2\">${t().sustain}</h3><ul class=\"space-y-1\"><li>🧺 Composting system</li><li>💧 Rainwater harvesting</li><li>🪿 Natural pest control</li><li>🏔️ Zero-waste practices</li><li>🐝 Organic methods</li></ul></div>`)} </div></section>`; }
+
+    const visitFAQ = [
+  { qEN:"Can I drop in?", qJP:"予約なしでも入れますか？",
+    aEN:"We welcome drop-ins when capacity allows. Booking guarantees a spot.",
+    aJP:"混雑していなければ可能です。確実に入りたい場合はご予約ください。" },
+  { qEN:"How much is it?", qJP:"料金は？",
+    aEN:"We suggest a small contribution (¥500–¥1500) or bring ingredients.",
+    aJP:"¥500〜¥1500のサポート、または食材の持ち寄りをお願いしています。" },
+  { qEN:"Access", qJP:"アクセス",
+    aEN:"10 min by bus from JR Hachiōji → 6 min walk. Detailed map sent after booking.",
+    aJP:"JR八王子駅からバスで10分→徒歩6分。詳細地図は予約後にご案内します。" }
+];
+
+function VisitFAQ(){
+  return `
+    <div class="mt-6 space-y-2">
+      ${visitFAQ.map(f=>`
+        <div class="accordion">
+          <button class="acc-header">
+            <span>❓ ${lang==='EN'?f.qEN:f.qJP}</span><span>▾</span>
+          </button>
+          <div class="acc-content"><p class="p-2">${lang==='EN'?f.aEN:f.aJP}</p></div>
+        </div>
+      `).join('')}
+    </div>`;
+}
+
+    function VisitPage(){ return `<section class="max-w-6xl mx-auto py-16 px-4 fade-enter"><h2 class="text-4xl font-serif mb-2" style="color:var(--forest-green);">${t().visitUs}</h2><p class="text-lg mb-8 italic" style="color:var(--olive);">${t().visitSub}</p><div class="grid md:grid-cols-3 gap-6">${card(`<div class=\"p-6\"><h3 class=\"text-xl font-semibold mb-2\">📍 ${t().location}</h3><p>Hachiōji, Tokyo, Japan<br/><em style=\"color:var(--olive);font-size:.8rem;\">${lang==='EN'?"Detailed address shared upon booking":"詳細住所は予約時に共有"}</em></p></div>`)}${card(`<div class=\"p-6\"><h3 class=\"text-xl font-semibold mb-2\">⏰ ${t().hours}</h3><p>Cafe: 10:00–18:00</p><p>Events: Various times</p><p>Garden: Daylight hours</p><p>Call Service: 10:00–21:00</p></div>`)}${card(`<div class=\"p-6\"><h3 class=\"text-xl font-semibold mb-2\">📧 ${t().contact}</h3><form id=\"visitForm\" class=\"space-y-3\"><label class=\"block text-sm\">${lang==='EN'?"Your Name":"お名前"}<input name=\"name\" class=\"mt-1 w-full p-3 rounded-md border\" placeholder=\"${lang==='EN'?"Your Name":"お名前"}\"/></label><label class=\"block text-sm\">Email<input name=\"email\" class=\"mt-1 w-full p-3 rounded-md border\" placeholder=\"Email\"/></label><label class=\"block text-sm\">${lang==='EN'?"Message or Interest":"メッセージ/関心"}<textarea name=\"msg\" class=\"mt-1 w-full p-3 rounded-md border h-28\" placeholder=\"${lang==='EN'?"Tell us how you'd like to join":"どのように参加したいか教えてください"}\"></textarea></label><div class="flex items-center gap-3 mt-2">
+  <button class="btn px-4 py-2" style="background:var(--terracotta);color:#fff;">
+    ${t().sendInquiry}
+  </button>
+
+  <a href="tel:+818012345678"
+     class="px-4 py-2 rounded-md text-sm font-medium border"
+     style="border-color:var(--sage-green);color:var(--forest-green);">
+    📞 ${lang==='EN' ? 'Call' : '電話'}
+  </a>
+</div>
+<div id=\"visitThanks\" class=\"hidden text-sm\" style=\"color:var(--forest-green);\">${lang==='EN'?"Thanks! We'll be in touch.":"ありがとうございます。追ってご連絡します。"}</div></form></div>`)} </div><div class="mt-10 p-6 rounded-xl" style="background:var(--warm-beige);"><h3 class="text-xl font-semibold mb-2">${t().firstGuide}</h3><ol class="space-y-1 list-decimal ml-5"><li>${t().step1}</li><li>${t().step2}</li><li>${t().step3}</li><li>${t().step4}</li><li>${t().step5}</li></ol></div></section>`; }
+    
+    /* router */
+    function renderRoute(){
+      const hash = location.hash.slice(1) || "Home"; let html = "";
+      if(hash.startsWith("Space:")){ const key=hash.split(":")[1]; const s=spaces.find(v=>v.key===key); if(s) html=SpaceDetail(s);
+      } else if(hash.startsWith("Recipe:")){ const idx=Number(hash.split(":")[1]); const r = RECIPES.find(x => x.key === idx); if(r) html=RecipePage(r);
+      } else if(hash.startsWith("Event:")){ const idx=Number(hash.split(":")[1]); const e=eventList[idx]; if(e) html=EventDetail(e);
+      } else if(hash.startsWith("Story:")){ const idx=Number(hash.split(":")[1]); const s=stories.find(x=>x.key===idx); if(s) html=StoryDetail(s);
+      } else {
+        switch(hash){
+          case "Home": html=HomePage(); break;
+          case "Cafe": html=CafePage(); break;
+          case "Events": html=EventsPage(); break;
+          case "Spaces": html=SpacesPage(); break;
+          case "Values": html=ValuesPage(); break;
+          case "Stories": html=StoriesPage(); break;
+          case "Gallery": html=GalleryPage(); break;
+          case "Programs": html=ProgramsPage(); break;
+          case "Garden": html=GardenPage(); break;
+          case "Calendar": html=CalendarPage(); break;
+          case "Visit": html=VisitPage(); break;
+          default: html=HomePage();
+        }
+      }
+      app.innerHTML = ""; const nodeWrap=document.createElement("div"); nodeWrap.innerHTML=html.trim(); const children=Array.from(nodeWrap.children); children.forEach(el=>{ el.classList.add("fade-enter"); requestAnimationFrame(()=> el.classList.add("fade-enter-active")); app.appendChild(el); });
+
+      // counters on view
+      setTimeout(()=>{ const counters=document.querySelectorAll('.stat-counter'); const observer=new IntersectionObserver((entries)=>{ entries.forEach(entry=>{ if(entry.isIntersecting){ const counter=entry.target.querySelector('.counter'); if(!counter) return; const target=parseInt(entry.target.dataset.target); const duration=parseInt(entry.target.dataset.duration); let current=0; const increment=target/(duration/16); const timer=setInterval(()=>{ current+=increment; if(current>=target){ counter.textContent=target; clearInterval(timer);} else { counter.textContent=Math.floor(current);} },16); observer.unobserve(entry.target); } }); }); counters.forEach(c=>observer.observe(c)); },100);
+
+      // ルート描画後（レイアウト安定を待つ）
+      setTimeout(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            initPhiloReveal?.();
+            initBloomOnView?.();
+          });
+        });
+      }, 120);
+
+      // visit form
+      const vf=document.getElementById("visitForm"); if(vf){ vf.addEventListener("submit",(e)=>{ e.preventDefault(); const f=new FormData(vf); if(!f.get("name")||!f.get("email")){ alert(lang==='EN'?"Please fill name and email":"お名前とメールを入力してください"); return;} document.getElementById("visitThanks").classList.remove("hidden"); setTimeout(()=>document.getElementById("visitThanks").classList.add("hidden"),3000); vf.reset(); }); }
+
+      document.getElementById("brandBtn").textContent=t().brand; document.getElementById("footerAbout").textContent="A community space where people and cultures meet, learn, and grow together."; document.getElementById("stickyBookingText").textContent=t().stickyBooking;
+    }
+
+    /* nav builders */
+    function buildNav(){ const d=t(); const desktop=document.getElementById("desktopNav"); const mobile=document.getElementById("mobileNav");
+      desktop.innerHTML = d.nav.map(p=>`<a href="#${p.k}" class="nav-link text-sm font-medium" style="color:var(--charcoal);">${lang==='EN'?p.en:p.jp}</a>`).join("") + ` <button id="langBtn" class="rounded-full text-white px-4 text-sm" style="background:var(--sage-green);">${d.langToggle}</button>`;
+      mobile.innerHTML = d.nav.map(p=>`<a href="#${p.k}" class="text-sm py-2 text-center rounded-lg border bg-white" style="border-color:var(--warm-beige);">${lang==='EN'?p.en:p.jp}</a>`).join("");
+      const langBtn=document.getElementById("langBtn"); const langBtnSm=document.getElementById("langBtnSm"); [langBtn,langBtnSm].forEach(btn=>{ if(!btn) return; btn.textContent=d.langToggle; btn.onclick=()=>{ lang=(lang==="EN"?"JP":"EN"); localStorage.setItem("fusion_lang",lang); buildNav(); renderRoute(); setTimeout(() => initPhiloReveal?.(), 0);}; });
+    }
+
+    /* testimonial carousel rotation */
+    let currentTestimonial=0; window.goToTestimonial=(index)=>{ currentTestimonial=index; const track=document.getElementById("testimonialTrack"); const dots=document.querySelectorAll(".testimonial-dot"); if(!track)return; track.style.transform=`translateX(-${currentTestimonial*100}%)`; dots.forEach((d,i)=>{ d.style.background = i===currentTestimonial ? 'var(--sage-green)' : 'var(--warm-beige)'; }); };
+    setInterval(()=>{ const track=document.getElementById("testimonialTrack"); const dots=document.querySelectorAll(".testimonial-dot"); if(!track||dots.length===0)return; currentTestimonial=(currentTestimonial+1)%dots.length; window.goToTestimonial(currentTestimonial); },5000);
+
+    /* sticky booking show/hide on scroll */
+    let lastScroll=0; window.addEventListener("scroll",()=>{ const currentScroll=window.pageYOffset; const stickyBooking=document.getElementById("stickyBooking"); if(currentScroll>300 && currentScroll>lastScroll){ stickyBooking.style.transform='translateY(0)'; } else if(currentScroll<lastScroll){ stickyBooking.style.transform='translateY(200px)'; } lastScroll=currentScroll; });
+
+    /* init */
+    window.navigate = navigate; document.getElementById("brandBtn").onclick=()=>navigate("Home"); const toggle=document.getElementById("menuToggle"); const wrap=document.getElementById("mobileNavWrap"); toggle.onclick=()=>{ const open=!wrap.classList.contains("hidden"); wrap.classList.toggle("hidden"); toggle.setAttribute("aria-expanded",String(!open)); };
+
+    window.addEventListener("hashchange",renderRoute); buildNav(); renderRoute();
+
+  </script>
+</body>
+</html>
